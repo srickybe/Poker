@@ -124,38 +124,38 @@ public class Hand {
                 cards[3].hasEqualRank(cards[4]);
     }
     
-    public Result computeRankAndValue(){
+    public Eval computeRankAndValue(){
         if(isRoyalFlush())
-            return new Result(10,0);
+            return new Eval(10,0);
         
         if(isStraightFlush())
-            return new Result(9,0);
+            return new Eval(9,0);
         
         if(isFourOfAKind())
-            return new Result(8,0);
+            return new Eval(8,0);
         
         if(isFullHouse())
-            return new Result(7,0);
+            return new Eval(7,0);
         
         if(isFlush())
-            return new Result(6,0);
+            return new Eval(6,0);
         
         if(isStraight())
-            return new Result(5,0);
+            return new Eval(5,0);
         
         if(isThreeOfAKind())
-            return new Result(4,0);
+            return new Eval(4,0);
         
         if(isTwoPairs())
-            return new Result(3,0);
+            return new Eval(3,0);
         
         if(isOnePair())
-            return new Result(2,0);
+            return new Eval(2,0);
         
         if(cards != null)
-            return new Result(1,0);
+            return new Eval(1,0);
         
-        return new Result(0,0);
+        return new Eval(0,0);
     }
     
     @Override

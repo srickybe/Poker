@@ -43,11 +43,11 @@ public class Card {
         }
     }
 
-    public boolean equalRank(Card card){
+    public boolean hasEqualRank(Card card){
         return Objects.equals(rank, card.rank);
     }
     
-    public boolean sameSuit(Card card){
+    public boolean hasSameSuit(Card card){
         return Objects.equals(suit, card.suit);
     }
     
