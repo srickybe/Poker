@@ -50,7 +50,10 @@ public class Poker {
     }
 
     public static void main(String args[]) {
-        for (int count = 0; count < 1e5; ++count) {
+        int maxValue = 0;
+        int maxLevel = 0;
+        
+        for (int count = 0; count < 1e6; ++count) {
             Poker poker = new Poker();
             /*System.out.println("Game :");
             System.out.println(poker);*/
@@ -66,9 +69,17 @@ public class Poker {
             Hand hand = new Hand(cards[0], cards[1], cards[2], cards[3], cards[4]);
             Eval eval = hand.computeRankAndValue();
             
-            if (eval.getRank()>= 8 && eval.getValue() > 200) {
+            if (eval.getRank() > maxLevel){
+                maxLevel = eval.getRank();
+                maxValue = eval.getValue();
                 System.out.println("hand = " + hand);
-                System.out.println("eval = " + eval);
+                System.out.println("eval = " + eval + "\n");
+            }
+            
+            else if(eval.getRank() == maxLevel && eval.getValue() > maxValue) {
+                maxValue = eval.getValue();
+                System.out.println("hand = " + hand);
+                System.out.println("eval = " + eval + "\n");
             }
         }
     }

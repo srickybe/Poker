@@ -147,15 +147,15 @@ public class Hand {
             return new Eval(4,computeThreeOfAKindValue());
         
         if(isTwoPairs())
-            return new Eval(3,0);
+            return new Eval(3,computeTwoPairsValue());
         
         if(isOnePair())
-            return new Eval(2,0);
+            return new Eval(2,computeOnePairValue());
         
         if(cards != null)
-            return new Eval(1,0);
+            return new Eval(1,computeDefaultValue());
         
-        return new Eval(0,0);
+        return new Eval(0,-1);
     }
     
     int computeStraightFlushValue(){
@@ -219,6 +219,48 @@ public class Hand {
         }
         
         return -1;
+    }
+    
+    int computeTwoPairsValue(){
+        if(cards[0].hasEqualRank(cards[1]) && cards[2].hasEqualRank(cards[3]))
+            return  cards[0].getRank() * 256 + cards[2].getRank() * 16 +
+                    cards[4].getRank();
+        
+        if(cards[0].hasEqualRank(cards[1]) && cards[3].hasEqualRank(cards[4]))
+            return  cards[0].getRank() * 256 + cards[3].getRank() * 16 +
+                    cards[2].getRank();
+        
+        if(cards[1].hasEqualRank(cards[2]) && cards[3].hasEqualRank(cards[4]))
+            return  cards[1].getRank() * 256 + cards[3].getRank() * 16 +
+                    cards[0].getRank();            
+        
+        return -1;
+    }
+    
+    int computeOnePairValue(){
+        if(cards[0].hasEqualRank(cards[1]))
+            return  cards[0].getRank() * 4096 + cards[2].getRank() * 256 +
+                    cards[3].getRank() * 16 + cards[4].getRank();
+        
+        if(cards[1].hasEqualRank(cards[2]))
+            return  cards[1].getRank() * 4096 + cards[0].getRank() * 256 +
+                    cards[3].getRank() * 16 + cards[4].getRank();
+        
+        if(cards[2].hasEqualRank(cards[3]))
+            return  cards[2].getRank() * 4096 + cards[0].getRank() * 256 +
+                    cards[1].getRank() * 16 + cards[4].getRank();
+        
+        if(cards[3].hasEqualRank(cards[4]))
+            return  cards[3].getRank() * 4096 + cards[0].getRank() * 256 +
+                    cards[1].getRank() * 16 + cards[2].getRank();
+        
+        return -1;
+    }
+    
+    int computeDefaultValue(){
+        return  cards[0].getRank() * 65536 + cards[1].getRank() * 4096 +
+                cards[2].getRank() * 256 + cards[3].getRank() * 16 +
+                cards[4].getRank();
     }
     
     @Override
