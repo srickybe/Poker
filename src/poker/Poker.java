@@ -63,12 +63,13 @@ public class Poker {
                 cards[i] = poker.getTopCard();
             }
 
-            /*Hand hand = new Hand(cards[0], cards[1], cards[2], cards[3], cards[4]);
-
-            /*if (hand.computeRank() >= 9) {
+            Hand hand = new Hand(cards[0], cards[1], cards[2], cards[3], cards[4]);
+            Eval eval = hand.computeRankAndValue();
+            
+            if (eval.getRank()>= 8 && eval.getValue() > 200) {
                 System.out.println("hand = " + hand);
-                System.out.println(hand.computeRank());
-            }*/
+                System.out.println("eval = " + eval);
+            }
         }
     }
 }

@@ -27,4 +27,9 @@ public class Eval {
         return value;
     }
 
+    @Override
+    public String toString() {
+        return "Eval{" + "rank=" + rank + ", value=" + value + '}';
+    }
+    
 }

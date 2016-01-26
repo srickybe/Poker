@@ -129,22 +129,22 @@ public class Hand {
             return new Eval(10,0);
         
         if(isStraightFlush())
-            return new Eval(9,0);
+            return new Eval(9,computeStraightFlushValue());
         
         if(isFourOfAKind())
-            return new Eval(8,0);
+            return new Eval(8,computeFourOfAKindValue());
         
         if(isFullHouse())
-            return new Eval(7,0);
+            return new Eval(7,computeFullHouseValue());
         
         if(isFlush())
-            return new Eval(6,0);
+            return new Eval(6,computeFlushValue());
         
         if(isStraight())
-            return new Eval(5,0);
+            return new Eval(5,computeStraightValue());
         
         if(isThreeOfAKind())
-            return new Eval(4,0);
+            return new Eval(4,computeThreeOfAKindValue());
         
         if(isTwoPairs())
             return new Eval(3,0);
@@ -156,6 +156,69 @@ public class Hand {
             return new Eval(1,0);
         
         return new Eval(0,0);
+    }
+    
+    int computeStraightFlushValue(){
+        return cards[0].getRank();
+    }
+    
+    int computeFourOfAKindValue(){
+        if( cards[0].hasEqualRank(cards[1]) &&
+            cards[0].hasEqualRank(cards[2]) &&
+            cards[0].hasEqualRank(cards[3])){
+            return cards[0].getRank() * 16 + cards[4].getRank();
+        } 
+        
+        if( cards[1].hasEqualRank(cards[2]) &&
+            cards[1].hasEqualRank(cards[3]) &&
+            cards[1].hasEqualRank(cards[4])){
+            return cards[1].getRank() * 16 + cards[0].getRank();
+        }
+        
+        return -1;
+    }
+    
+    int computeFullHouseValue(){
+        if( cards[0].hasEqualRank(cards[1]) && 
+            cards[1].hasEqualRank(cards[2]) &&
+            cards[3].hasEqualRank(cards[4])){
+            return cards[0].getRank() * 16 + cards[3].getRank();
+        } 
+        
+        if( cards[0].hasEqualRank(cards[1]) && 
+            cards[2].hasEqualRank(cards[3]) &&
+            cards[3].hasEqualRank(cards[4])){
+            return cards[2].getRank() * 16 + cards[0].getRank();
+        }
+        
+        return -1;
+    }
+    
+    int computeFlushValue(){
+        return cards[0].getRank();
+    }
+    
+    int computeStraightValue(){
+        return cards[0].getRank();
+    }
+    
+    int computeThreeOfAKindValue(){
+        if(cards[0].hasEqualRank(cards[1]) && cards[1].hasEqualRank(cards[2])){
+            return  cards[0].getRank() * 256 + cards[3].getRank() * 16 +
+                    cards[4].getRank();
+        }
+        
+        if(cards[1].hasEqualRank(cards[2]) && cards[2].hasEqualRank(cards[3])){
+            return  cards[1].getRank() * 256 + cards[0].getRank() * 16 +
+                    cards[4].getRank();            
+        }
+        
+        if(cards[2].hasEqualRank(cards[3]) && cards[3].hasEqualRank(cards[4])){
+            return  cards[2].getRank() * 256 + cards[0].getRank() * 16 +
+                    cards[1].getRank(); 
+        }
+        
+        return -1;
     }
     
     @Override
