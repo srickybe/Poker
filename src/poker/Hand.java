@@ -40,15 +40,17 @@ public class Hand {
             int index = i;
             
             for(int j = i+1; j < 5; ++j){
-                if(cards[j].getRank() > cards[index].getRank()){
+                if(cards[j].getRank() > max){
                     index = j;
                     max = cards[j].getRank();
                 }
             }
             
-            Card tmp = cards[i];
-            cards[i] = cards[index];
-            cards[index] = tmp;
+            if(index != i){
+                Card tmp = cards[i];
+                cards[i] = cards[index];
+                cards[index] = tmp;
+            }
         }
     }
 
@@ -66,30 +68,30 @@ public class Hand {
     }
     
     public boolean isFourOfAKind(){
-        return  (cards[0].equalRank(cards[1]) &&
-                cards[0].equalRank(cards[2]) &&
-                cards[0].equalRank(cards[3])) 
+        return  (cards[0].hasEqualRank(cards[1]) &&
+                cards[0].hasEqualRank(cards[2]) &&
+                cards[0].hasEqualRank(cards[3])) 
                 ||
-                (cards[1].equalRank(cards[2]) &&
-                cards[1].equalRank(cards[3]) &&
-                cards[1].equalRank(cards[4]));
+                (cards[1].hasEqualRank(cards[2]) &&
+                cards[1].hasEqualRank(cards[3]) &&
+                cards[1].hasEqualRank(cards[4]));
     }
     
     public boolean isFullHouse(){
-        return  (cards[0].equalRank(cards[1]) && 
-                cards[1].equalRank(cards[2]) &&
-                cards[3].equalRank(cards[4])) 
+        return  (cards[0].hasEqualRank(cards[1]) && 
+                cards[1].hasEqualRank(cards[2]) &&
+                cards[3].hasEqualRank(cards[4])) 
                 ||
-                (cards[0].equalRank(cards[1]) && 
-                cards[2].equalRank(cards[3]) &&
-                cards[3].equalRank(cards[4])); 
+                (cards[0].hasEqualRank(cards[1]) && 
+                cards[2].hasEqualRank(cards[3]) &&
+                cards[3].hasEqualRank(cards[4])); 
     }
     
     public boolean isFlush(){
-        return  cards[0].sameSuit(cards[1]) && 
-                cards[1].sameSuit(cards[2]) &&
-                cards[2].sameSuit(cards[3]) &&
-                cards[3].sameSuit(cards[4]);
+        return  cards[0].hasSameSuit(cards[1]) && 
+                cards[1].hasSameSuit(cards[2]) &&
+                cards[2].hasSameSuit(cards[3]) &&
+                cards[3].hasSameSuit(cards[4]);
     }
     
     public boolean isStraight(){
@@ -100,60 +102,60 @@ public class Hand {
     }
     
     public boolean isThreeOfAKind(){
-        return  (cards[0].equalRank(cards[1]) && cards[1].equalRank(cards[2])) ||
-                (cards[1].equalRank(cards[2]) && cards[2].equalRank(cards[3])) ||
-                (cards[2].equalRank(cards[3]) && cards[3].equalRank(cards[4]));
+        return  (cards[0].hasEqualRank(cards[1]) && cards[1].hasEqualRank(cards[2])) ||
+                (cards[1].hasEqualRank(cards[2]) && cards[2].hasEqualRank(cards[3])) ||
+                (cards[2].hasEqualRank(cards[3]) && cards[3].hasEqualRank(cards[4]));
     }
     
     public boolean isTwoPairs(){
-        if(cards[0].equalRank(cards[1]) && cards[2].equalRank(cards[3]))
+        if(cards[0].hasEqualRank(cards[1]) && cards[2].hasEqualRank(cards[3]))
             return true;
         
-        if(cards[0].equalRank(cards[1]) && cards[3].equalRank(cards[4]))
+        if(cards[0].hasEqualRank(cards[1]) && cards[3].hasEqualRank(cards[4]))
             return true;
         
-        return cards[1].equalRank(cards[2]) && cards[3].equalRank(cards[4]);
+        return cards[1].hasEqualRank(cards[2]) && cards[3].hasEqualRank(cards[4]);
     }
     
     public boolean isOnePair(){
-        return  cards[0].equalRank(cards[1]) ||
-                cards[1].equalRank(cards[2]) ||
-                cards[2].equalRank(cards[3]) ||
-                cards[3].equalRank(cards[4]);
+        return  cards[0].hasEqualRank(cards[1]) ||
+                cards[1].hasEqualRank(cards[2]) ||
+                cards[2].hasEqualRank(cards[3]) ||
+                cards[3].hasEqualRank(cards[4]);
     }
     
-    public int computeRank(){
+    public Result computeRankAndValue(){
         if(isRoyalFlush())
-            return 10;
+            return new Result(10,0);
         
         if(isStraightFlush())
-            return 9;
+            return new Result(9,0);
         
         if(isFourOfAKind())
-            return 8;
+            return new Result(8,0);
         
         if(isFullHouse())
-            return 7;
+            return new Result(7,0);
         
         if(isFlush())
-            return 6;
+            return new Result(6,0);
         
         if(isStraight())
-            return 5;
+            return new Result(5,0);
         
         if(isThreeOfAKind())
-            return 4;
+            return new Result(4,0);
         
         if(isTwoPairs())
-            return 3;
+            return new Result(3,0);
         
         if(isOnePair())
-            return 2;
+            return new Result(2,0);
         
         if(cards != null)
-            return 1;
+            return new Result(1,0);
         
-        return 0;
+        return new Result(0,0);
     }
     
     @Override
