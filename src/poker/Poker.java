@@ -53,7 +53,7 @@ public class Poker {
         int maxValue = 0;
         int maxLevel = 0;
         
-        for (int count = 0; count < 1e6; ++count) {
+        for (int count = 0; count < 1e5; ++count) {
             Poker poker = new Poker();
             /*System.out.println("Game :");
             System.out.println(poker);*/

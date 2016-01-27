@@ -28,6 +28,34 @@ public class Card {
         set(rank, suit);
     }
 
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Card other = (Card) obj;
+        if (!Objects.equals(this.rank, other.rank)) {
+            return false;
+        }
+        if (!Objects.equals(this.suit, other.suit)) {
+            return false;
+        }
+        return true;
+    }
+
+    
     public int getRank() {
         return rank;
     }
@@ -70,29 +98,16 @@ public class Card {
     public boolean isHigher(Card card) {
         return rank > card.rank;
     }
-
-    public boolean isAce() {
-        return rank == 12;
-    }
-    
-    public boolean isKing() {
-        return rank == 11;
-    }
-
-    public boolean isQueen() {
-        return rank == 10;
-    }
-
-    public boolean isJack() {
-        return rank == 9;
-    }
-    
-    public boolean isTen(){
-        return rank == 8;
-    }
     
     @Override
     public String toString(){
         return "" + RANKS[rank] + " " + SUITS[suit];
+    }
+    
+    public static void main(String args[]){
+        Card c1 = new Card(7, 0);
+        Card c2 = new Card(7, 0);
+        
+        System.out.println("c1.equals(c2)? " + c1.equals(c2));
     }
 }

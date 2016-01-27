@@ -5,6 +5,10 @@
  */
 package poker;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
+
 /**
  * Invariant: the cards forming the hand are sorted
  * cards[0] is the highest ranked card of the hand
@@ -13,7 +17,7 @@ public class Hand {
 
     static private final int NUMBER_OF_CARDS = 5;
     private Card[] cards;
-
+    
     public Hand() {
     }
 
@@ -22,6 +26,19 @@ public class Hand {
         sortCards();
     }
 
+    public Hand(Function f){
+        if(f.getHandSize() == NUMBER_OF_CARDS){
+            cards = new Card[NUMBER_OF_CARDS];
+            int i = 0;
+            ListIterator<Card> it = f.cardIterator();
+            
+            while(it.hasNext()){
+                cards[i] = it.next();
+                ++i;
+            }
+        }
+    }
+    
     public final void setCards(Card c0, Card c1, Card c2, Card c3, Card c4) {
         if (cards == null) {
             cards = new Card[NUMBER_OF_CARDS];
@@ -54,15 +71,6 @@ public class Hand {
         }
     }
 
-    public boolean isRoyalFlush() {
-        return  cards[0].isAce() &&
-                cards[1].isKing() &&
-                cards[2].isQueen() &&
-                cards[3].isJack() &&
-                cards[4].isTen() &&
-                isFlush();
-    }
-    
     public boolean isStraightFlush(){
         return isStraight() && isFlush();
     }
@@ -102,9 +110,10 @@ public class Hand {
     }
     
     public boolean isThreeOfAKind(){
-        return  (cards[0].hasEqualRank(cards[1]) && cards[1].hasEqualRank(cards[2])) ||
-                (cards[1].hasEqualRank(cards[2]) && cards[2].hasEqualRank(cards[3])) ||
-                (cards[2].hasEqualRank(cards[3]) && cards[3].hasEqualRank(cards[4]));
+        return  
+        (cards[0].hasEqualRank(cards[1]) && cards[1].hasEqualRank(cards[2])) ||
+        (cards[1].hasEqualRank(cards[2]) && cards[2].hasEqualRank(cards[3])) ||
+        (cards[2].hasEqualRank(cards[3]) && cards[3].hasEqualRank(cards[4]));
     }
     
     public boolean isTwoPairs(){
@@ -114,7 +123,8 @@ public class Hand {
         if(cards[0].hasEqualRank(cards[1]) && cards[3].hasEqualRank(cards[4]))
             return true;
         
-        return cards[1].hasEqualRank(cards[2]) && cards[3].hasEqualRank(cards[4]);
+        return 
+            cards[1].hasEqualRank(cards[2]) && cards[3].hasEqualRank(cards[4]);
     }
     
     public boolean isOnePair(){
@@ -125,9 +135,6 @@ public class Hand {
     }
     
     public Eval computeRankAndValue(){
-        if(isRoyalFlush())
-            return new Eval(10,0);
-        
         if(isStraightFlush())
             return new Eval(9,computeStraightFlushValue());
         
@@ -265,12 +272,14 @@ public class Hand {
     
     @Override
     public String toString(){
-        String res = "{";
+        String res = "Hand{cards={";
         
-        for(int i = 0; i < cards.length; ++i){
-            res += i + ": " + cards[i] + ", ";
+        for(int i = 0; i < cards.length-1; ++i){
+            res += (i+1) + ": " + cards[i] + ", ";
         }
         
-        return res += "}";
+        return  res += cards.length + ": " + 
+                cards[cards.length-1].toString() + "}}";
     }
+    
 }
