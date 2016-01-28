@@ -88,10 +88,16 @@ public class Hand {
     }
     
     public boolean isStraight(){
-        return  cards[0].isOneRankHigher(cards[1]) &&
+        return  (cards[0].isOneRankHigher(cards[1]) &&
                 cards[1].isOneRankHigher(cards[2]) &&
                 cards[2].isOneRankHigher(cards[3]) &&
-                cards[3].isOneRankHigher(cards[4]);
+                cards[3].isOneRankHigher(cards[4])) 
+                    ||
+                (cards[0].getRank() == 12 &&
+                cards[1].getRank() == 3 &&
+                cards[2].getRank() == 2 && 
+                cards[3].getRank() == 1 &&
+                cards[4].getRank() == 0);
     }
     
     public boolean isThreeOfAKind(){
