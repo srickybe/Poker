@@ -11,7 +11,7 @@ import java.util.Objects;
  *
  * @author john
  */
-public class Card {
+public class Card implements Comparable<Card>{
 
     private static final String SUITS[] = {"CLUB", "DIAMOND", "HEART", "SPADE"};
     private static final String RANKS[] = {
@@ -39,20 +39,22 @@ public class Card {
         if (this == obj) {
             return true;
         }
+        
         if (obj == null) {
             return false;
         }
+        
         if (getClass() != obj.getClass()) {
             return false;
         }
+        
         final Card other = (Card) obj;
+        
         if (!Objects.equals(this.rank, other.rank)) {
             return false;
         }
-        if (!Objects.equals(this.suit, other.suit)) {
-            return false;
-        }
-        return true;
+        
+        return Objects.equals(this.suit, other.suit);
     }
 
     @Override
@@ -110,10 +112,24 @@ public class Card {
         return "" + RANKS[rank] + " " + SUITS[suit];
     }
     
+    @Override
+    public int compareTo(Card other) {
+        int res = rank - other.rank;
+        
+        if(res == 0){
+            return suit - other.suit;
+        }
+        
+        return res;
+    }
+    
     public static void main(String args[]){
         Card c1 = new Card(7, 0);
-        Card c2 = new Card(7, 0);
+        Card c2 = new Card(7, 1);
+        Card c3 = new Card(6, 3);
         
         System.out.println("c1.equals(c2)? " + c1.equals(c2));
+        System.out.println(c1.compareTo(c2));
+        System.out.println(c1.compareTo(c3));
     }
 }

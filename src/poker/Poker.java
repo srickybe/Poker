@@ -16,8 +16,9 @@ import java.util.Stack;
 public class Poker {
 
     private final int MAX_NUMBER_OF_PLAYERS = 10;
+    private final int MINIMAL_STARTING_CHIPS_PER_PLAYER = 1000;
     private final Stack<Card> cards;
-    private ArrayList<Player> players;
+    private final ArrayList<Player> players;
     private Integer buttonIndex;
     private Integer smallBlindIndex;
     private Integer bigBlindIndex;
@@ -66,7 +67,7 @@ public class Poker {
         shuffle(cards);
         setPlayersRole();
         bet = betSmallBlind();
-        bet = betBigBlind();
+        bet = betBigBlind(bet);
         distributeCards();
         distributeCards();
         preFlop();
@@ -80,25 +81,29 @@ public class Poker {
         }
         
         for(int i = startIndex; i < players.size(); ++i){
-            System.out.println("Please, " + players.get(i).getName() + ":");
-            System.out.println(players.get(i).act());
+            output("Please, " + players.get(i).getName() + ":");
+            output(players.get(i).act().toString());
         }
     }
     
     public int betSmallBlind(){
-        System.out.print(players.get(smallBlindIndex).getName());
-        System.out.print(", bet the small blind, please:\n");
-        return players.get(smallBlindIndex).bet();
+        Player player = players.get(smallBlindIndex);
+        String message = player.getName() + ", bet the small blind, please:\n";
+        player.output(message);
+        return player.bet();
     }
     
-    public int betBigBlind(){
-        System.out.print(players.get(bigBlindIndex).getName());
-        System.out.print(", bet the big blind, please:\n");
-        int choice = players.get(bigBlindIndex).bet();
+    public int betBigBlind(int smallBlind){
+        Player player = players.get(bigBlindIndex);
+        String message = player.getName() +
+                ", bet the big blind, please. The small blind is " +
+                smallBlind + "\n";
+        player.output(message);
+        int choice = player.bet();
         
         while(choice != 2 * bet){
-            System.out.println("Bet twice the small blind, please.");
-            choice = players.get(bigBlindIndex).bet();
+            player.output("Bet twice the small blind, please.");
+            choice = player.bet();
         }
         
         return choice;
@@ -106,7 +111,7 @@ public class Poker {
     
     public void distributeCards(){
         for(int i = smallBlindIndex; i < players.size(); ++i){
-            System.out.println("Giving a card to player" + i);
+            output("Giving a card to player" + i);
             
             if(!players.get(i).addCard(getTopCard())){
                 
@@ -115,7 +120,7 @@ public class Poker {
         
         if(smallBlindIndex > 0){
             for(int i = 0; i < smallBlindIndex; ++i){
-                System.out.println("Giving a card to player" + i);
+                output("Giving a card to player" + i);
                 
                 if(!players.get(i).addCard(getTopCard())){
                     
@@ -158,7 +163,7 @@ public class Poker {
             String name = promptPlayerName();
             
             while (names.contains(name)) {
-                System.out.println("There's already a player named " + name);
+                output("There's already a player named " + name);
                 name = promptPlayerName();
             }
             
@@ -169,13 +174,13 @@ public class Poker {
     }
 
     public int promptNumberOfPlayers() {
-        System.out.println("Enter the number of players");
+        output("Enter the number of players");
         Scanner input = new Scanner(System.in);
         int nPlayers = input.nextInt();
 
         while (nPlayers > MAX_NUMBER_OF_PLAYERS) {
             System.out.print("Too high! The maximal number of ");
-            System.out.println("players is " + MAX_NUMBER_OF_PLAYERS);
+            output("players is " + MAX_NUMBER_OF_PLAYERS);
             nPlayers = input.nextInt();
         }
         
@@ -186,7 +191,8 @@ public class Poker {
         ArrayList<Player> result = new ArrayList<>();
         
         for (int i = 0; i < names.size(); ++i) {
-            result.add(new Player(names.get(i)));
+            result.add(new Player(names.get(i), 
+                    MINIMAL_STARTING_CHIPS_PER_PLAYER));
         }
         
         return result;
@@ -194,7 +200,7 @@ public class Poker {
 
     public String promptPlayerName() {
         Scanner input = new Scanner(System.in);
-        System.out.println("Enter a player's name");
+        output("Enter a player's name");
         
         return input.next();
     }
@@ -248,6 +254,10 @@ public class Poker {
     public Card getTopCard() {
         return cards.pop();
     }
+    
+    public static void output(String message){
+        System.out.println(message);
+    }
 
     public static void main(String args[]) {
         int maxValue = 0;
@@ -255,7 +265,7 @@ public class Poker {
         
         for (int count = 0; count < 1; ++count) {
             Poker poker = new Poker();
-            System.out.println("poker = " + poker);
+            output("poker = " + poker);
             Card[] cards = new Card[5];
 
             for (int i = 0; i < 5; ++i) {
@@ -268,14 +278,14 @@ public class Poker {
             if (eval.getRank() > maxLevel){
                 maxLevel = eval.getRank();
                 maxValue = eval.getValue();
-                System.out.println("hand = " + hand);
-                System.out.println("eval = " + eval + "\n");
+                output("hand = " + hand);
+                output("eval = " + eval + "\n");
             }
             
             else if(eval.getRank() == maxLevel && eval.getValue() > maxValue) {
                 maxValue = eval.getValue();
-                System.out.println("hand = " + hand);
-                System.out.println("eval = " + eval + "\n");
+                output("hand = " + hand);
+                output("eval = " + eval + "\n");
             }
         }
     }

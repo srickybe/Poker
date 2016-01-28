@@ -197,7 +197,10 @@ public class Hand {
     }
     
     int computeStraightValue(){
-        return cards[0].getRank();
+        if(cards[0].getRank() != 12 || cards[1].getRank() != 3)
+            return cards[0].getRank();
+        
+        return 3;
     }
     
     int computeThreeOfAKindValue(){
@@ -273,4 +276,17 @@ public class Hand {
                 cards[cards.length-1].toString() + "}}";
     }
     
+    public static void main(String [] args){
+        Hand hand = new Hand(
+                new Card(12, (int) (4.0 * Math.random())),
+                new Card(3, (int) (4.0 * Math.random())),
+                new Card(2, (int) (4.0 * Math.random())),
+                new Card(1, (int) (4.0 * Math.random())),
+                new Card(0, (int) (4.0 * Math.random())));
+        
+        System.out.println("hand = " + hand);
+        System.out.println("hand.isStraight()? " + hand.isStraight());
+        System.out.println("hand.computeRankAndValue() = " 
+                + hand.computeRankAndValue());
+    }
 }
