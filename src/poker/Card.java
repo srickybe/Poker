@@ -55,6 +55,12 @@ public class Card {
         return true;
     }
 
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        return super.clone();
+    }
+
+    
     
     public int getRank() {
         return rank;

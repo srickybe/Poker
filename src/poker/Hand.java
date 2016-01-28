@@ -5,8 +5,6 @@
  */
 package poker;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.util.ListIterator;
 
 /**
@@ -24,19 +22,6 @@ public class Hand {
     public Hand(Card c0, Card c1, Card c2, Card c3, Card c4) {
         setCards(c0, c1, c2, c3, c4);
         sortCards();
-    }
-
-    public Hand(Function f){
-        if(f.getHandSize() == NUMBER_OF_CARDS){
-            cards = new Card[NUMBER_OF_CARDS];
-            int i = 0;
-            ListIterator<Card> it = f.cardIterator();
-            
-            while(it.hasNext()){
-                cards[i] = it.next();
-                ++i;
-            }
-        }
     }
     
     public final void setCards(Card c0, Card c1, Card c2, Card c3, Card c4) {

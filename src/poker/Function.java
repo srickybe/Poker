@@ -14,7 +14,7 @@ import java.util.ListIterator;
  */
 public class Function {
 
-    private LinkedList<Card> hand;
+    private final LinkedList<Card> hand;
 
     public Function() {
         hand = new LinkedList<>();
@@ -47,43 +47,43 @@ public class Function {
 
     public Hand bestHand() {
         if (hand.size() == 7) {
+            Hand result = null;
             int maxLevel = 0;
             int maxValue = -1;
 
             for (int i = 0; i < hand.size(); ++i) {
                 Card c1 = hand.remove(i);
+                
                 for (int j = i; j < hand.size(); ++j) {
                     Card c2 = hand.remove(j);
-                    System.out.println("i = " + i + "  j = " + j);
-                    /*System.out.println("hand = " + hand);
-                    System.out.println("eval = " + eval);*/
                     Hand tmp = new Hand(
-                            hand.get(0), 
-                            hand.get(1), 
-                            hand.get(2), 
+                            hand.get(0),
+                            hand.get(1),
+                            hand.get(2),
                             hand.get(3),
                             hand.get(4));
-                    //Hand tmp = new Hand(this);
                     Eval eval = tmp.computeRankAndValue();
 
                     if (eval.getRank() > maxLevel) {
                         maxLevel = eval.getRank();
                         maxValue = eval.getValue();
-                        System.out.println("hand = " + hand);
-                        System.out.println("eval = " + eval + "\n");
-                    } else if (eval.getRank() == maxLevel && eval.getValue() > maxValue) {
+                        result = tmp;
+                    } else if (eval.getRank() == maxLevel
+                            && eval.getValue() > maxValue) {
                         maxValue = eval.getValue();
-                        System.out.println("hand = " + hand);
-                        System.out.println("eval = " + eval + "\n");
+                        result = tmp;
                     }
 
                     hand.add(j, c2);
                 }
+                
                 hand.add(i, c1);
             }
+            
+            return result;
         }
 
-        return new Hand();
+        return null;
     }
 
     public int getHandSize() {
@@ -112,7 +112,9 @@ public class Function {
         }
 
         System.out.println("f = " + f);
-
-        f.bestHand();
+        Hand bestHand = f.bestHand();
+        System.out.println("best hand = " + bestHand);
+        System.out.println("Rank and value = " + 
+                bestHand.computeRankAndValue());
     }
 }
