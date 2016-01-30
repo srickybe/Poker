@@ -22,6 +22,8 @@ public class Poker {
     private Integer buttonIndex;
     private Integer smallBlindIndex;
     private Integer bigBlindIndex;
+    private int smallBlind;
+    private int bigBlind;
     private Integer bet;
 
     public Poker() {
@@ -66,8 +68,8 @@ public class Poker {
     private void game() {
         shuffle(cards);
         setPlayersRole();
-        bet = betSmallBlind();
-        bet = betBigBlind(bet);
+        bet = haveTheSmallBlindPaid();
+        bet = haveTheBigBlindPaid(bet);
         distributeCards();
         distributeCards();
         preFlop();
@@ -80,23 +82,34 @@ public class Poker {
             startIndex = 0;
         }
         
+        int highestBet = bigBlind;
+        
         for(int i = startIndex; i < players.size(); ++i){
-            output("Please, " + players.get(i).getName() + ":");
-            output(players.get(i).act().toString());
+            Decision decision = players.get(i).actGivenBigBlindAndHighestBet(
+                    bigBlind,
+                    highestBet);
+            
+            switch (decision.getAction()) {
+                case CALL:
+                case RAISE:
+                case CHECK:
+                case FOLD:
+                default:
+            }
         }
     }
     
-    public int betSmallBlind(){
+    public int haveTheSmallBlindPaid(){
         Player player = players.get(smallBlindIndex);
         String message = player.getName() + ", bet the small blind, please:\n";
         player.output(message);
         return player.bet();
     }
     
-    public int betBigBlind(int smallBlind){
+    public int haveTheBigBlindPaid(int smallBlind){
         Player player = players.get(bigBlindIndex);
         String message = player.getName() +
-                ", bet the big blind, please. The small blind is " +
+                ", pay the big blind, please. The small blind is " +
                 smallBlind + "\n";
         player.output(message);
         int choice = player.bet();
@@ -242,9 +255,9 @@ public class Poker {
             res += "\n" + i + ":" + players.get(i);
         }
         
-        res += "],\nbuttonIndex=[" + buttonIndex;
-        res += "],\nsmallBlindIndex=[" + smallBlindIndex;
-        res += "],\nbigBlindIndex=[" + bigBlindIndex;
+        res += "],\nbuttonIndex=" + buttonIndex;
+        res += "],\nsmallBlindIndex=" + smallBlindIndex;
+        res += "],\nbigBlindIndex=" + bigBlindIndex;
         res += "}";
         
         return res;
