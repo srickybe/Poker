@@ -11,6 +11,7 @@ package poker;
  */
 public enum Action {
     CALL,
+    ALL_IN,
     CHECK,
     RAISE,
     FOLD;

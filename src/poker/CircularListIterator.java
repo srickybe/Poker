@@ -5,9 +5,12 @@
  */
 package poker;
 
+import java.util.Objects;
+
 /**
  *
  * @author ricky
+ * @param <T>
  */
 public class CircularListIterator<T> {
 
@@ -18,7 +21,7 @@ public class CircularListIterator<T> {
     }
 
     public boolean hasNext() {
-        return true;
+        return current != null;
     }
 
     public T next() {
@@ -27,4 +30,48 @@ public class CircularListIterator<T> {
 
         return data;
     }
+
+    boolean moveTo(T data){
+        if(current == null){
+            return false;
+        }
+        
+        if(current.data.equals(data)){
+            return false;
+        }
+        
+        Node<T> cur = current.next;
+        
+        while(cur != current){
+            if(cur.data.equals(data)){
+                return true;
+            }
+            
+            cur = cur.next;
+        } 
+        
+        return false;
+    }
+    
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 67 * hash + Objects.hashCode(this.current);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        
+        final CircularListIterator<?> other = (CircularListIterator<?>) obj;
+        
+        return Objects.equals(this.current, other.current);
+    }  
 }
