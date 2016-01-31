@@ -29,7 +29,7 @@ public class Poker {
             + "1, TO " + ACTIONS[1].toString() + "\n"
             + "2, TO " + ACTIONS[2].toString() + "\n"
             + "3, TO " + ACTIONS[3].toString() + "\n"
-            + "4, TO " + ACTIONS[3].toString() + "\n";
+            + "4, TO " + ACTIONS[4].toString() + "\n";
 
     private final int MAX_NUMBER_OF_PLAYERS = 10;
     private final int MINIMAL_STARTING_CHIPS_PER_PLAYER = 1000;
@@ -79,6 +79,9 @@ public class Poker {
         while (true) {
             if (currentPlayer.canPlay()) {
                 Action action = act(currentPlayer);
+                output(currentPlayer.getName() + 
+                        "\taction = " + action.toString());
+                betGivenAction(currentPlayer, action);
                 
                 if (action == Action.RAISE) {
                     whoRaised = currentPlayer;
@@ -87,14 +90,14 @@ public class Poker {
                     if(action == Action.CHECK && currentPlayer == whoRaised){
                         break;
                     }
-                    else{
-                        if(countActivePlayer() == 1){
+                    else {
+                        if (action == Action.FOLD && countActivePlayer() == 1) {
                             break;
                         }
                     }
                 }
             }
-
+            
             currentPlayer = it.next();
         }
     }
@@ -116,7 +119,9 @@ public class Poker {
                 return count;
             }
             
-            ++count;
+            if(currentPlayer.canPlay()){
+                ++count;
+            }
         }
     }
     
@@ -129,8 +134,10 @@ public class Poker {
             choice = player.getIntInput();
 
             if ((choice != null)
+                    && (choice >= 0 && choice <= 4)
                     && (ACTIONS[choice] != Action.RAISE || canPlayerRaise(player))
-                    && (ACTIONS[choice] != Action.CHECK || player == whoRaised)) {
+                    && (ACTIONS[choice] != Action.CHECK || player == whoRaised)
+                    && (ACTIONS[choice] != Action.CALL || player != whoRaised)) {
                 break;
             }
         }
@@ -138,7 +145,7 @@ public class Poker {
         return ACTIONS[choice];
     }
 
-    public int betGivenAction(Player player, Action action) {
+    public void betGivenAction(Player player, Action action) {
 
         switch (action) {
             case ALL_IN:
@@ -146,8 +153,8 @@ public class Poker {
                 break;
 
             case CALL:
-                player.removeFromTotalChips(highestBet);
-                pot += highestBet;
+                /*player.removeFromTotalChips(highestBet);
+                pot += highestBet;*/
                 break;
 
             case CHECK:
@@ -159,14 +166,12 @@ public class Poker {
 
             case RAISE:
                 highestBet += getRaise(player);
-                player.removeFromTotalChips(highestBet);
+                //player.removeFromTotalChips(highestBet);
                 break;
 
             default:
 
         }
-
-        return 0;
     }
 
     private Integer getRaise(Player player) {

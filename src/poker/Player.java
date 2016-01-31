@@ -27,7 +27,7 @@ public class Player {
             + "1, TO " + ACTIONS[1].toString() + "\n"
             + "2, TO " + ACTIONS[2].toString() + "\n"
             + "3, TO " + ACTIONS[3].toString() + "\n"
-            + "4, TO " + ACTIONS[3].toString() + "\n";
+            + "4, TO " + ACTIONS[4].toString() + "\n";
     
     private final String name;
     private final ArrayList<Card> holeCards;
