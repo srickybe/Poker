@@ -37,7 +37,7 @@ public class CircularListIterator<T> {
         }
         
         if(current.data.equals(data)){
-            return false;
+            return true;
         }
         
         Node<T> cur = current.next;

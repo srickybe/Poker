@@ -56,76 +56,135 @@ public class Poker {
         cards.shuffle();
         setPlayersRole();
         smallBlind = makePlayerPaySmallBlind(smallBlindPlayer);
+        smallBlindPlayer.setCurrentBet(smallBlind);
         bigBlind = makePlayerPayBigBlind(bigBlindPlayer, smallBlind);
+        bigBlindPlayer.setCurrentBet(bigBlind);
         whoRaised = bigBlindPlayer;
         highestBet = bigBlind;
-        pot = bigBlind;
         dealOneCardToPlayers();
         dealOneCardToPlayers();
         preFlop();
     }
-        
-    public void preFlop() {
-        Player currentPlayer;
-        CircularListIterator<Player> it = players.listIterator();
-        
-        if(it != null && it.moveTo(bigBlindPlayer)){
-            currentPlayer = it.next();
-        }
-        else{
+
+    private void preFlop() {
+        if (players.size() < 2) {
+            output("Two players at least should play!");
             return;
         }
+
+        CircularListIterator<Player> it = listIteratorToUnderTheGun();
+        Player currentPlayer = it.next();
+        output("Player under the gun: " + currentPlayer.getName() + "\n");
 
         while (true) {
             if (currentPlayer.canPlay()) {
                 Action action = act(currentPlayer);
-                output(currentPlayer.getName() + 
-                        "\taction = " + action.toString());
+                output(currentPlayer.getName()
+                        + ": action = " + action.toString());
                 betGivenAction(currentPlayer, action);
-                
+
                 if (action == Action.RAISE) {
                     whoRaised = currentPlayer;
-                }
-                else{
-                    if(action == Action.CHECK && currentPlayer == whoRaised){
+                } else {
+                    if (action == Action.CHECK && currentPlayer == whoRaised) {
                         break;
-                    }
-                    else {
+                    } else {
                         if (action == Action.FOLD && countActivePlayer() == 1) {
                             break;
                         }
                     }
                 }
+                
             }
-            
+
             currentPlayer = it.next();
+        }
+
+        pot = collectAllBets();
+        output("POT = " + pot);
+        decrementAllPlayersChips();
+    }
+
+    private int collectAllBets() {
+        CircularListIterator<Player> it = listIteratorToPlayer(buttonPlayer);
+        Player currentPlayer = it.next();
+        int result = currentPlayer.getCurrentBet();
+
+        while (true) {
+            currentPlayer = it.next();
+
+            if (currentPlayer == buttonPlayer) {
+                return result;
+            }
+
+            result += currentPlayer.getCurrentBet();
         }
     }
 
-    int countActivePlayer(){
-        CircularListIterator<Player> it = players.listIterator();
-        
-        if(it == null){
+    private void decrementAllPlayersChips() {
+        CircularListIterator<Player> it = listIteratorToPlayer(buttonPlayer);
+        Player currentPlayer = it.next();
+        currentPlayer.removeBetChips();
+
+        while (true) {
+            currentPlayer = it.next();
+
+            if (currentPlayer == buttonPlayer) {
+                return;
+            }
+            
+            currentPlayer.removeBetChips();
+        }
+    }
+
+    private CircularListIterator<Player> listIteratorToUnderTheGun() {
+        CircularListIterator<Player> it = listIteratorToPlayer(bigBlindPlayer);
+
+        if (it != null) {
+            output("it.next().getName() = " + it.next().getName());
+            output("bigBlindPlayer.getName() = " + bigBlindPlayer.getName());
+            return it;
+        }
+
+        return null;
+    }
+
+    private CircularListIterator<Player> listIteratorToPlayer(Player player) {
+        if (!players.isEmpty()) {
+            CircularListIterator<Player> it = players.listIterator();
+
+            if (it.moveTo(player)) {
+                return it;
+            }
+        }
+
+        return null;
+    }
+
+    private int countActivePlayer() {
+
+        if (players.isEmpty()) {
             return 0;
         }
 
+        CircularListIterator<Player> it = players.listIterator();
         Player firstPlayer = it.next();
-        int count = firstPlayer.canPlay()? 1: 0;
-        
-        while(true){
+        int count = firstPlayer.canPlay() ? 1 : 0;
+
+        while (true) {
             Player currentPlayer = it.next();
-            
-            if(currentPlayer == firstPlayer){
+
+            if (currentPlayer == firstPlayer) {
                 return count;
             }
-            
-            if(currentPlayer.canPlay()){
+
+            if (currentPlayer.canPlay()) {
                 ++count;
             }
         }
     }
-    
-    public Action act(Player player) {
+
+    private Action act(Player player) {
         Integer choice = null;
 
         while (true) {
@@ -145,7 +204,7 @@ public class Poker {
         return ACTIONS[choice];
     }
 
-    public void betGivenAction(Player player, Action action) {
+    private void betGivenAction(Player player, Action action) {
 
         switch (action) {
             case ALL_IN:
@@ -153,20 +212,21 @@ public class Poker {
                 break;
 
             case CALL:
-                /*player.removeFromTotalChips(highestBet);
-                pot += highestBet;*/
+                player.setCurrentBet(highestBet);
                 break;
 
             case CHECK:
+                player.setCurrentBet(highestBet);
                 break;
 
             case FOLD:
                 player.fold();
+
                 break;
 
             case RAISE:
                 highestBet += getRaise(player);
-                //player.removeFromTotalChips(highestBet);
+                player.setCurrentBet(highestBet);
                 break;
 
             default:
@@ -211,30 +271,42 @@ public class Poker {
         return message;
     }
 
-    public String betInfo() {
+    private String betInfo() {
         return "The highest bet is " + highestBet + " chips " + "and the big "
                 + "blind equals " + bigBlind + "\n";
     }
 
-    public int makePlayerPaySmallBlind(Player player) {
+    private int makePlayerPaySmallBlind(Player player) {
         String message = player.getName() + ", bet the small blind, please:\n";
-        player.output(message);
-        return player.bet();
+        Integer bet;
+
+        while (true) {
+            player.output(message);
+            bet = player.getIntInput();
+
+            if (bet != null) {
+                return bet;
+            }
+        }
     }
 
-    public int makePlayerPayBigBlind(Player player, int smallBlind) {
-        String message = player.getName()
+    private int makePlayerPayBigBlind(Player player, int smallBlind) {
+        String promptMessage = player.getName()
                 + ", pay the big blind, please. The small blind is "
                 + smallBlind + "\n";
-        player.output(message);
-        int choice = player.bet();
+        String errorMessage = "Bet twice the small blind, please.";
+        Integer choice;
 
-        while (choice != 2 * smallBlind) {
-            player.output("Bet twice the small blind, please.");
-            choice = player.bet();
+        while (true) {
+            player.output(promptMessage);
+            choice = player.getIntInput();
+
+            if (choice != null && choice == 2 * smallBlind) {
+                return choice;
+            }
+
+            player.output(errorMessage);
         }
-
-        return choice;
     }
 
     /**
@@ -242,14 +314,14 @@ public class Poker {
      */
     public void dealOneCardToPlayers() {
         CircularListIterator<Player> i1
-                = players.listIterator(smallBlindPlayer);
+                = listIteratorToPlayer(smallBlindPlayer);
 
         Player current = i1.next();
         current.addCard(removeTopCard());
         System.out.println("current = " + current);
 
         CircularListIterator<Player> i2
-                = players.listIterator(smallBlindPlayer);
+                = listIteratorToPlayer(smallBlindPlayer);
 
         while (!i1.equals(i2)) {
             current = i1.next();
@@ -394,10 +466,12 @@ public class Poker {
     }
 
     public static void main(String args[]) {
+        Poker game = new Poker();
+        
         int maxValue = 0;
         int maxLevel = 0;
 
-        for (int count = 0; count < 1; ++count) {
+        for (int count = 0; count < 0; ++count) {
             Poker poker = new Poker();
             output("poker = " + poker);
             Card[] cards = new Card[5];

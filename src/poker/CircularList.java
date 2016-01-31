@@ -63,14 +63,14 @@ public class CircularList<T> {
     public CircularListIterator<T> listIterator(){
         return new CircularListIterator<>(head);
     }
-    
+    /*
     /**
      * Returns an iterator it such that it.next() returns data 
      * @param data
      * @return an iterator it such that it.next() returns data if the list
      * contains data, null otherwise or null if the list is empty 
      */
-    public CircularListIterator<T> listIterator(T data){
+    /*public CircularListIterator<T> listIterator(T data){
         if(isEmpty()){
             return null;
         }
@@ -90,7 +90,7 @@ public class CircularList<T> {
         }
         
         return null;
-    }
+    }*/
     
     public int size(){
         if (isEmpty()){

@@ -14,24 +14,10 @@ import java.util.Scanner;
  */
 public class Player {
 
-    private final Action ACTIONS[] = {
-        Action.CALL, 
-        Action.ALL_IN,
-        Action.CHECK,
-        Action.FOLD,
-        Action.RAISE
-    };
-    private final String ACT_PROMPT_MESSAGE = 
-            "Type\n"
-            + "0, TO " + ACTIONS[0].toString() + "\n"
-            + "1, TO " + ACTIONS[1].toString() + "\n"
-            + "2, TO " + ACTIONS[2].toString() + "\n"
-            + "3, TO " + ACTIONS[3].toString() + "\n"
-            + "4, TO " + ACTIONS[4].toString() + "\n";
-    
     private final String name;
     private final ArrayList<Card> holeCards;
     private Integer chips;
+    private int currentBet;
     private boolean hasFolded;
 
     /**
@@ -43,6 +29,7 @@ public class Player {
         this.name = name;
         holeCards = new ArrayList<>();
         this.chips = chips;
+        currentBet = 0;
         hasFolded = false;
     }
     
@@ -52,6 +39,10 @@ public class Player {
     
     public Integer getChips(){
         return chips;
+    }
+
+    public Integer getCurrentBet() {
+        return currentBet;
     }
     
     public String getName() {
@@ -65,10 +56,10 @@ public class Player {
     public boolean hasFolded() {
         return hasFolded;
     }
-    
-    public Decision actGivenBigBlindAndHighestBet(int bigBlind, int highestBet) {
 
-        return decideGivenBigBlindAndHighestBet(bigBlind, highestBet);
+    public void setCurrentBet(int currentBet) {
+        this.currentBet = currentBet;
+        output(name + "\tcurrent bet = " + currentBet);
     }
     
     /**
@@ -92,24 +83,12 @@ public class Player {
         return false;
     }
 
-    public int bet(){
+    /*public int bet(){
         return getIntInput();
-    }
+    }*/
     
     public boolean canPlay(){
         return !hasFolded();
-    }
-    
-    private Integer getChoice(String errorMessage) {
-        Integer choice = getIntInput();
-        
-        while(choice == null || choice > ACTIONS.length || choice < 0) {
-            output(errorMessage);
-            output(ACT_PROMPT_MESSAGE);
-            choice = getIntInput();
-        }
-        
-        return choice;
     }
     
     public Integer getIntInput() {
@@ -125,62 +104,9 @@ public class Player {
 
         return entry;
     }
-    
-    private Decision decideGivenBigBlindAndHighestBet(
-            int bigBlind, 
-            int highestBet){
-        String errorMessage = "Wrong choice!";
-        output("" + "Highest bet: " + highestBet + "\n" + ACT_PROMPT_MESSAGE);
-        Action chosenAction = ACTIONS[getChoice(errorMessage)];
-        
-        switch (chosenAction){
-            case CALL:
-                return new Decision(Action.CALL, highestBet);
-                
-            case RAISE:
-                output( name + ", please enter your raise (smallest: " +
-                        bigBlind + ")\n");
-                
-                return new Decision(
-                        Action.RAISE, 
-                        raiseGivenBigBlindAndHighestBet(bigBlind, highestBet));
-                
-            case FOLD:
-                return new Decision(Action.FOLD, null);
-                
-            case CHECK:
-                return new Decision(Action.CHECK, highestBet);
-                
-            default:
-                return new Decision(null, null);
-        }
-    }
 
     public void fold(){
         hasFolded = true;
-    }
-    
-    private int raiseGivenBigBlindAndHighestBet(
-            int bigBlind, 
-            int highestBet) {
-        Integer raise = getIntInput();
-        
-        while(  raise == null || 
-                raise < bigBlind || 
-                (raise % bigBlind != 0) ||
-                raise < chips){
-            int multiple = (1 + (int)(3 * Math.random()));
-            int raiseExample = multiple * bigBlind;
-            String message = 
-                    "\nThe raise must be a multiple of " + bigBlind +
-                    "\nExample: a raise might be " + raiseExample +
-                    "\nYour total bet would be then: " + highestBet + " + " +
-                    raiseExample + " = " + (highestBet + raiseExample) + "\n";
-            output(message);
-            raise = getIntInput();
-        }
-        
-        return raise + highestBet;
     }
     
     public void output(String message) {
@@ -191,16 +117,8 @@ public class Player {
         System.err.println(message);
     }
     
-    public void removeFromTotalChips(int numberOfChips){
-        if(chips >= numberOfChips){
-            chips -= numberOfChips;
-        }
-        else{
-            while(true){
-                output("the number of chips to remove is superior"
-                        + "to the total of my chips");
-            }
-        }
+    public void removeBetChips(){
+        chips -= currentBet;
     }
     
     @Override
@@ -244,7 +162,7 @@ public class Player {
         player.output("This is the highest bet:" + highestBet);
         
         
-        for (int i = 0; i < 4; ++i) {
+        /*for (int i = 0; i < 4; ++i) {
             Decision decision = 
                     player.actGivenBigBlindAndHighestBet(bigBlind, highestBet);
             System.out.println("Player's bet = " + decision.getChips());
@@ -252,6 +170,6 @@ public class Player {
             if(decision.getAction() == Action.RAISE){
                 highestBet = decision.getChips();
             }
-        }
+        }*/
     }
 }
