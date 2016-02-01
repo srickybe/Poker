@@ -5,118 +5,93 @@
  */
 package poker;
 
+import java.util.ArrayList;
+
 /**
  *
  * @author ricky
- * @param <T>
+ * @param <E>
  */
-public class CircularList<T> {
+public class CircularList<E> {
 
-    public Node<T> head;
+    private final ArrayList<E> list;
 
     public CircularList() {
+        list = new ArrayList<>();
     }
 
-    public boolean add(T data) {
-        if (head != null) {
-            Node node = new Node(head.previous, data, head);
-            head.previous.next = node;
-            head.previous = node;
-            
-            return true;
-        } 
-        else {
-            head = new Node(null, data, null);
-            head.next = head;
-            head.previous = head;
-            
-            return true;
-        }
+    public boolean add(E data) {
+        return list.add(data);
     }
 
-    public boolean contains(T data) {
-        if (!isEmpty()) {
-            if (head.data == data) {
-                return true;
-            }
+    public boolean contains(E data) {
+        return list.contains(data);
+    }
 
-            Node cur = head.next;
-
-            while (cur != head) {
-                if (cur.data == data) {
-                    return true;
-                }
-
-                cur = cur.next;
-            }
-
-            return false;
-        }
-        
-        return false;
+    public int indexOf(Object obj) {
+        return list.indexOf(obj);
     }
 
     public boolean isEmpty() {
-        return head == null;
+        return list.isEmpty();
+    }
+
+    public E get(int index) {
+        return list.get(index);
+    }
+
+    public CircularListIterator<E> listIterator() {
+        return new CircularListIterator<>(list.listIterator());
+    }
+
+    CircularListIterator<E> listIterator(int index) {
+        return new CircularListIterator(list.listIterator(index));
+    }
+
+    public int size() {
+        return list.size();
     }
     
-    public CircularListIterator<T> listIterator(){
-        return new CircularListIterator<>(head);
-    }
-    /*
-    /**
-     * Returns an iterator it such that it.next() returns data 
-     * @param data
-     * @return an iterator it such that it.next() returns data if the list
-     * contains data, null otherwise or null if the list is empty 
-     */
-    /*public CircularListIterator<T> listIterator(T data){
-        if(isEmpty()){
-            return null;
+    public static void main(String args[]){
+        CircularList<Double> ints = new CircularList<>();
+        
+        for(double i = 0; i < 10; ++i){
+            ints.add(i * 1.0e6 + 100 * Math.random());
         }
         
-        if(head.data.equals(data)){
-            return new CircularListIterator<>(head);
+        CircularListIterator<Double> it = ints.listIterator();
+        
+        for(int i = 0; i < 30; ++i){
+            System.out.println("Forward: i = " + i + ": " + it.next());
         }
         
-        Node<T> cur = head.next;
-        
-        while(cur != head){
-            if(cur.data.equals(data)){
-                return new CircularListIterator<>(cur);
-            }
-            
-            cur = cur.next;
+        for(int i = 0; i < 30; ++i){
+            System.out.println("Backwards: i = " + i + ": " + it.previous());
         }
         
-        return null;
-    }*/
-    
-    public int size(){
-        if (isEmpty()){
-            return 0;
+        for(int i = 0; i < 30; ++i){
+            System.out.println("i = " + i + ": " + 
+                    ((i<15)? it.next(): it.previous()));
         }
         
-        int res = 1;
-        Node<T> cur = head.next;
+        System.out.println("ints.get(9) = " + ints.get(9));
         
-        while(cur != head){
-            ++res;
-            cur = cur.next;
+        int res;
+        
+        try{
+            res = ints.indexOf(-1000);
+            System.out.println("res = " + res);
+            res = ints.indexOf(4);
+            System.out.println("res = " + res);
+        }
+        catch(Exception e){
+            System.out.println(e);
         }
         
-        return res;
-    }
-    
-    //TODO Throw an exception when the list is empty
-    public T get(int index){
-        Node<T> res = head;
-        
-        for(int i = 0; i < index; ++i){
-            res = res.next;
+        for(int i = 0; i < 1; ++i){
+            CircularListIterator i2 = ints.listIterator(9);
+            System.out.println("i2.next() = " + i2.next());
+            System.out.println("ints.indexOf(7e6) = " + ints.indexOf(ints.get(7)));
         }
-        
-        return res.data;
     }
 }
-

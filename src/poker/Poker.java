@@ -150,15 +150,7 @@ public class Poker {
     }
 
     private CircularListIterator<Player> listIteratorToPlayer(Player player) {
-        if (!players.isEmpty()) {
-            CircularListIterator<Player> it = players.listIterator();
-
-            if (it.moveTo(player)) {
-                return it;
-            }
-        }
-
-        return null;
+        return players.listIterator(players.indexOf(player));
     }
 
     private int countActivePlayer() {
@@ -313,20 +305,18 @@ public class Poker {
      * deal a card to all the players starting form the small blind
      */
     public void dealOneCardToPlayers() {
-        CircularListIterator<Player> i1
+        CircularListIterator<Player> it 
                 = listIteratorToPlayer(smallBlindPlayer);
-
-        Player current = i1.next();
-        current.addCard(removeTopCard());
-        System.out.println("current = " + current);
-
-        CircularListIterator<Player> i2
-                = listIteratorToPlayer(smallBlindPlayer);
-
-        while (!i1.equals(i2)) {
-            current = i1.next();
-            current.addCard(removeTopCard());
-            System.out.println("current = " + current);
+        Player currentPlayer = it.next();
+        
+        while(true){
+            currentPlayer.addCard(removeTopCard());
+            output("currentPlayer = " + currentPlayer.toString());
+            currentPlayer = it.next();
+            
+            if(currentPlayer == smallBlindPlayer){
+                break;
+            }
         }
     }
 
@@ -468,7 +458,7 @@ public class Poker {
     public static void main(String args[]) {
         Poker game = new Poker();
         
-        int maxValue = 0;
+        /*int maxValue = 0;
         int maxLevel = 0;
 
         for (int count = 0; count < 0; ++count) {
@@ -493,6 +483,6 @@ public class Poker {
                 output("hand = " + hand);
                 output("eval = " + eval + "\n");
             }
-        }
+        }*/
     }
 }

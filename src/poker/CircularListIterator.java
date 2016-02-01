@@ -5,59 +5,57 @@
  */
 package poker;
 
+import java.util.ArrayList;
+import java.util.ListIterator;
 import java.util.Objects;
 
 /**
  *
  * @author ricky
- * @param <T>
+ * @param <E>
  */
-public class CircularListIterator<T> {
+public class CircularListIterator<E> {
 
-    private Node<T> current;
+    private final ListIterator<E> iterator;
 
-    public CircularListIterator(Node<T> head) {
-        current = head;
+    public CircularListIterator(ListIterator<E> iterator) {
+        this.iterator = iterator;
     }
 
     public boolean hasNext() {
-        return current != null;
-    }
-
-    public T next() {
-        T data = current.data;
-        current = current.next;
-
-        return data;
-    }
-
-    boolean moveTo(T data){
-        if(current == null){
-            return false;
-        }
-        
-        if(current.data.equals(data)){
-            return true;
-        }
-        
-        Node<T> cur = current.next;
-        
-        while(cur != current){
-            if(cur.data.equals(data)){
-                return true;
+        if (!iterator.hasNext()) {
+            while (iterator.hasPrevious()) {
+                iterator.previous();
             }
-            
-            cur = cur.next;
-        } 
-        
-        return false;
+        }
+
+        return iterator.hasNext();
     }
-    
-    @Override
-    public int hashCode() {
-        int hash = 5;
-        hash = 67 * hash + Objects.hashCode(this.current);
-        return hash;
+
+    public boolean hasPrevious() {
+        if (!iterator.hasPrevious()) {
+            while (iterator.hasNext()) {
+                iterator.next();
+            }
+        }
+
+        return iterator.hasPrevious();
+    }
+
+    public E next() {
+        if (hasNext()) {
+            return iterator.next();
+        }
+
+        return iterator.next();
+    }
+
+    public E previous() {
+        if (hasPrevious()) {
+            return iterator.previous();
+        }
+
+        return iterator.previous();
     }
 
     @Override
@@ -72,6 +70,14 @@ public class CircularListIterator<T> {
         
         final CircularListIterator<?> other = (CircularListIterator<?>) obj;
         
-        return Objects.equals(this.current, other.current);
-    }  
+        return this.iterator.equals(other.iterator);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        return hash;
+    }
+    
+    
 }
