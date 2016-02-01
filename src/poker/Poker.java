@@ -188,6 +188,7 @@ public class Poker {
                     && (choice >= 0 && choice <= 4)
                     && (ACTIONS[choice] != Action.RAISE || canPlayerRaise(player))
                     && (ACTIONS[choice] != Action.CHECK || player == whoRaised)
+                    && (ACTIONS[choice] != Action.FOLD || player != whoRaised)
                     && (ACTIONS[choice] != Action.CALL || player != whoRaised)) {
                 break;
             }
