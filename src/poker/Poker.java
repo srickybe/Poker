@@ -320,10 +320,6 @@ public class Poker {
         }
     }
 
-    public Player getPlayers(int index) {
-        return players.get(index);
-    }
-
     private void setPlayersRole() {
         if (players.size() > 2) {
             CircularListIterator<Player> it = players.listIterator();
@@ -368,8 +364,8 @@ public class Poker {
         Integer nPlayers = getIntInput();
 
         while (nPlayers == null || nPlayers > MAX_NUMBER_OF_PLAYERS) {
-            output("Too high! The maximal number of "
-                    + "players is " + MAX_NUMBER_OF_PLAYERS);
+            output("Coose a number of players between maximal 2 and "
+                    + MAX_NUMBER_OF_PLAYERS);
             nPlayers = getIntInput();
         }
 
