@@ -403,18 +403,6 @@ public class Poker {
         return input.next();
     }
 
-    private boolean addPlayer(Player player) {
-        if (players.size() < MAX_NUMBER_OF_PLAYERS) {
-            if (!isPlayer(player)) {
-                return players.add(player);
-            } else {
-                return false;
-            }
-        }
-
-        return false;
-    }
-
     private boolean isPlayer(Player player) {
         for (int i = 0; i < players.size(); ++i) {
             if (players.get(i).getName().equals(player.getName())) {
