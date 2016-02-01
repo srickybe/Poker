@@ -403,15 +403,6 @@ public class Poker {
         return input.next();
     }
 
-    private boolean isPlayer(Player player) {
-        for (int i = 0; i < players.size(); ++i) {
-            if (players.get(i).getName().equals(player.getName())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     @Override
     public String toString() {
         String res = "Poker{" + "\nMAX_NUMBER_OF_PLAYERS="
