@@ -65,6 +65,27 @@ public class Poker {
         dealOneCardToPlayers();
         preFlop();
     }
+    
+    /*
+     * returns the first active player after "player" 
+     * or null if no active player has been found after "player"  
+     */
+    public Player firstActivePlayerAfter(Player player) {
+        CircularListIterator<Player> it = listIteratorToPlayer(player);
+        Player currentPlayer = it.next();
+
+        while (true) {
+            currentPlayer = it.next();
+
+            if (currentPlayer == player) {
+                return null;
+            }
+
+            if (currentPlayer.canPlay()) {
+                return currentPlayer;
+            }
+        }
+    }
 
     private void preFlop() {
         if (players.size() < 2) {
