@@ -55,15 +55,26 @@ public class Poker {
     private void game() {
         cards.shuffle();
         setPlayersRole();
-        smallBlind = makePlayerPaySmallBlind(smallBlindPlayer);
+        setSmallBlind();
         smallBlindPlayer.setCurrentBet(smallBlind);
-        bigBlind = makePlayerPayBigBlind(bigBlindPlayer, smallBlind);
+        setBigBlind();
         bigBlindPlayer.setCurrentBet(bigBlind);
-        whoRaised = bigBlindPlayer;
+        setWhoRaised(bigBlindPlayer);
         highestBet = bigBlind;
         dealOneCardToPlayers();
         dealOneCardToPlayers();
         preFlop();
+        pot = collectAllBets();
+        output("POT = " + pot);
+        decrementAllPlayersChips();
+    }
+
+    private void setBigBlind() {
+        bigBlind = bigBlindPlayer.betBigBlind(smallBlind);
+    }
+
+    private void setSmallBlind() {
+        smallBlind = smallBlindPlayer.betSmallBlind();
     }
     
     /*
@@ -87,45 +98,88 @@ public class Poker {
         }
     }
 
-    private void preFlop() {
-        if (players.size() < 2) {
-            output("Two players at least should play!");
-            return;
+    public boolean setSmallBlindPlayer() {
+        Player player = firstActivePlayerAfter(buttonPlayer);
+
+        if (player != null) {
+            smallBlindPlayer = player;
+            return true;
+        } else {
+            return false;
         }
-
-        CircularListIterator<Player> it = listIteratorToUnderTheGun();
-        Player currentPlayer = it.next();
-        output("Player under the gun: " + currentPlayer.getName() + "\n");
-
-        while (true) {
-            if (currentPlayer.canPlay()) {
-                Action action = act(currentPlayer);
-                output(currentPlayer.getName()
-                        + ": action = " + action.toString());
-                betGivenAction(currentPlayer, action);
-
-                if (action == Action.RAISE) {
-                    whoRaised = currentPlayer;
-                } else {
-                    if (action == Action.CHECK && currentPlayer == whoRaised) {
-                        break;
-                    } else {
-                        if (action == Action.FOLD && countActivePlayer() == 1) {
-                            break;
-                        }
-                    }
-                }
-                
-            }
-
-            currentPlayer = it.next();
-        }
-
-        pot = collectAllBets();
-        output("POT = " + pot);
-        decrementAllPlayersChips();
     }
 
+    public boolean setBigBlindPlayer() {
+        Player player = firstActivePlayerAfter(smallBlindPlayer);
+
+        if (player != null) {
+            bigBlindPlayer = player;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public boolean isValidAction(Action action, Player player) {
+        return (action != Action.RAISE || canPlayerRaise(player))
+                && (action != Action.CHECK || player == whoRaised)
+                && (action != Action.FOLD || player != whoRaised)
+                && (action != Action.CALL || player != whoRaised);
+    }
+
+    public Action getPlayerAction(Player player) {
+        Action action;
+        String promptMessage = player.getName() + ": " + ACT_PROMPT_MESSAGE;
+
+        while (true) {
+            action = player.act(promptMessage, betInfo());
+
+            if (isValidAction(action, player)) {
+                return action;
+            }
+        }
+    }
+
+    public void makeAllPlayersBet() {
+        CircularListIterator<Player> it = listIteratorToUnderTheGun();
+
+        while (true) {
+            Player currentPlayer = it.next();
+
+            if (currentPlayer.canPlay()) {
+                Action action = getPlayerAction(currentPlayer);
+                updatePlayer(currentPlayer, action);
+
+                if (action == Action.RAISE) {
+                    setWhoRaised(currentPlayer);
+                } else {
+                    if (actionEndedRound(action, currentPlayer)) {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    private void setWhoRaised(Player currentPlayer) {
+        whoRaised = currentPlayer;
+    }
+
+    private boolean actionEndedRound(Action action, Player currentPlayer) {
+        if ((action == Action.CHECK) && (currentPlayer == whoRaised)) {
+            return true;
+        } else {
+            if ((action == Action.FOLD) && (countActivePlayer() == 1)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private void preFlop() {
+        makeAllPlayersBet();
+    }
+    
     private int collectAllBets() {
         CircularListIterator<Player> it = listIteratorToPlayer(buttonPlayer);
         Player currentPlayer = it.next();
@@ -218,8 +272,7 @@ public class Poker {
         return ACTIONS[choice];
     }
 
-    private void betGivenAction(Player player, Action action) {
-
+    private void updatePlayer(Player player, Action action) {
         switch (action) {
             case ALL_IN:
                 output("NOT DONE YET");
@@ -235,28 +288,27 @@ public class Poker {
 
             case FOLD:
                 player.fold();
-
                 break;
 
             case RAISE:
-                highestBet += getRaise(player);
+                highestBet += getPlayerRaise(player);
                 player.setCurrentBet(highestBet);
                 break;
 
             default:
-
         }
     }
 
-    private Integer getRaise(Player player) {
-        Integer raise = null;
+    private int getPlayerRaise(Player player) {
+        Integer raise;
         int maxRaise = player.getChips() - highestBet;
-
-        while (true) {
+        
+        while(true){
+            player.output(player.getName() + ": " + ACT_PROMPT_MESSAGE);
             player.output(betInfo());
             player.output(raiseExample());
             raise = player.getIntInput();
-
+            
             if (raise != null
                     && raise >= bigBlind
                     && (raise % bigBlind == 0)
@@ -264,7 +316,7 @@ public class Poker {
                 break;
             }
         }
-
+        
         return raise;
     }
 
@@ -288,39 +340,6 @@ public class Poker {
     private String betInfo() {
         return "The highest bet is " + highestBet + " chips " + "and the big "
                 + "blind equals " + bigBlind + "\n";
-    }
-
-    private int makePlayerPaySmallBlind(Player player) {
-        String message = player.getName() + ", bet the small blind, please:\n";
-        Integer bet;
-
-        while (true) {
-            player.output(message);
-            bet = player.getIntInput();
-
-            if (bet != null) {
-                return bet;
-            }
-        }
-    }
-
-    private int makePlayerPayBigBlind(Player player, int smallBlind) {
-        String promptMessage = player.getName()
-                + ", pay the big blind, please. The small blind is "
-                + smallBlind + "\n";
-        String errorMessage = "Bet twice the small blind, please.";
-        Integer choice;
-
-        while (true) {
-            player.output(promptMessage);
-            choice = player.getIntInput();
-
-            if (choice != null && choice == 2 * smallBlind) {
-                return choice;
-            }
-
-            player.output(errorMessage);
-        }
     }
 
     /**
@@ -454,32 +473,5 @@ public class Poker {
 
     public static void main(String args[]) {
         Poker game = new Poker();
-        
-        /*int maxValue = 0;
-        int maxLevel = 0;
-
-        for (int count = 0; count < 0; ++count) {
-            Poker poker = new Poker();
-            output("poker = " + poker);
-            Card[] cards = new Card[5];
-
-            for (int i = 0; i < 5; ++i) {
-                cards[i] = poker.removeTopCard();
-            }
-
-            Hand hand = new Hand(cards[0], cards[1], cards[2], cards[3], cards[4]);
-            Eval eval = hand.computeRankAndValue();
-
-            if (eval.getRank() > maxLevel) {
-                maxLevel = eval.getRank();
-                maxValue = eval.getValue();
-                output("hand = " + hand);
-                output("eval = " + eval + "\n");
-            } else if (eval.getRank() == maxLevel && eval.getValue() > maxValue) {
-                maxValue = eval.getValue();
-                output("hand = " + hand);
-                output("eval = " + eval + "\n");
-            }
-        }*/
     }
 }

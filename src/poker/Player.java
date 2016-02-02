@@ -14,6 +14,14 @@ import java.util.Scanner;
  */
 public class Player {
 
+    private final Action ACTIONS[] = {
+        Action.ALL_IN,
+        Action.CALL,
+        Action.CHECK,
+        Action.FOLD,
+        Action.RAISE
+    };
+        
     private final String name;
     private final ArrayList<Card> holeCards;
     private Integer chips;
@@ -62,6 +70,21 @@ public class Player {
         output(name + "\tcurrent bet = " + currentBet);
     }
     
+    public Action act(
+            String promptMessage,
+            String betInfo) {
+        while (true) {
+            output(promptMessage);
+            output(betInfo);
+
+            Integer choice = getIntInput();
+
+            if (choice != null && choice >= 0 && choice <= 4) {
+                return ACTIONS[choice];
+            }
+        }
+    }
+    
     /**
      * Adds a card to the player's pocket if the number of cards of the 
      * player's pocket is strictly inferior to two
@@ -83,9 +106,36 @@ public class Player {
         return false;
     }
 
-    /*public int bet(){
-        return getIntInput();
-    }*/
+    public int betSmallBlind() {
+        String message = this.getName() + ", bet the small blind, please:\n";
+        Integer bet;
+        while (true) {
+            this.output(message);
+            bet = this.getIntInput();
+            if (bet != null) {
+                return bet;
+            }
+        }
+    }
+    
+    public int betBigBlind(int smallBlind) {
+        String promptMessage = this.getName()
+                + ", pay the big blind, please. The small blind is "
+                + smallBlind + "\n";
+        String errorMessage = "Bet twice the small blind, please.";
+        Integer bet;
+
+        while (true) {
+            this.output(promptMessage);
+            bet = this.getIntInput();
+
+            if (bet != null && bet == 2 * smallBlind) {
+                return bet;
+            }
+
+            this.output(errorMessage);
+        }
+    }
     
     public boolean canPlay(){
         return !hasFolded();
