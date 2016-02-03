@@ -15,22 +15,6 @@ import java.util.Stack;
  */
 public class Poker {
 
-    private final Action ACTIONS[] = {
-        Action.ALL_IN,
-        Action.CALL,
-        Action.CHECK,
-        Action.FOLD,
-        Action.RAISE
-    };
-
-    private final String ACT_PROMPT_MESSAGE
-            = "Type\n"
-            + "0, TO " + ACTIONS[0].toString() + "\n"
-            + "1, TO " + ACTIONS[1].toString() + "\n"
-            + "2, TO " + ACTIONS[2].toString() + "\n"
-            + "3, TO " + ACTIONS[3].toString() + "\n"
-            + "4, TO " + ACTIONS[4].toString() + "\n";
-
     private final int MAX_NUMBER_OF_PLAYERS = 10;
     private final int MINIMAL_STARTING_CHIPS_PER_PLAYER = 1000;
     private final CardDeck cards;
@@ -76,7 +60,7 @@ public class Poker {
     private void setSmallBlind() {
         smallBlind = smallBlindPlayer.betSmallBlind();
     }
-    
+
     /*
      * returns the first active player after "player" 
      * or null if no active player has been found after "player"  
@@ -92,7 +76,7 @@ public class Poker {
                 return null;
             }
 
-            if (currentPlayer.canPlay()) {
+            if (currentPlayer.isActive()) {
                 return currentPlayer;
             }
         }
@@ -121,23 +105,10 @@ public class Poker {
     }
 
     public boolean isValidAction(Action action, Player player) {
-        return (action != Action.RAISE || canPlayerRaise(player))
+        return (action != Action.RAISE || player.canRaise(bigBlind, highestBet))
                 && (action != Action.CHECK || player == whoRaised)
                 && (action != Action.FOLD || player != whoRaised)
                 && (action != Action.CALL || player != whoRaised);
-    }
-
-    public Action getPlayerAction(Player player) {
-        Action action;
-        String promptMessage = player.getName() + ": " + ACT_PROMPT_MESSAGE;
-
-        while (true) {
-            action = player.act(promptMessage, betInfo());
-
-            if (isValidAction(action, player)) {
-                return action;
-            }
-        }
     }
 
     public void makeAllPlayersBet() {
@@ -146,18 +117,47 @@ public class Poker {
         while (true) {
             Player currentPlayer = it.next();
 
-            if (currentPlayer.canPlay()) {
-                Action action = getPlayerAction(currentPlayer);
-                updatePlayer(currentPlayer, action);
+            if (currentPlayer.isActive()) {
+                Decision decision;
 
-                if (action == Action.RAISE) {
-                    setWhoRaised(currentPlayer);
-                } else {
-                    if (actionEndedRound(action, currentPlayer)) {
+                while (true) {
+                    decision = currentPlayer.act(bigBlind, highestBet);
+
+                    if (isValidAction(decision.getAction(), currentPlayer)) {
                         break;
                     }
                 }
+
+                applyDecision(decision, currentPlayer);
+
+                if (actionEndedRound(decision.getAction(), currentPlayer)) {
+                    break;
+                }
+
             }
+        }
+    }
+
+    private void applyDecision(Decision decision, Player currentPlayer) {
+        switch (decision.getAction()) {
+            case CALL:
+
+            case CHECK:
+                currentPlayer.setCurrentBet(decision.getBet());
+                break;
+
+            case RAISE:
+                setWhoRaised(currentPlayer);
+                highestBet = decision.getBet();
+                currentPlayer.setCurrentBet(highestBet);
+                break;
+
+            case FOLD:
+                currentPlayer.fold();
+                break;
+
+            default:
+                output("CASE." + decision.getAction() + "not treated");
         }
     }
 
@@ -175,11 +175,11 @@ public class Poker {
         }
         return false;
     }
-    
+
     private void preFlop() {
         makeAllPlayersBet();
     }
-    
+
     private int collectAllBets() {
         CircularListIterator<Player> it = listIteratorToPlayer(buttonPlayer);
         Player currentPlayer = it.next();
@@ -207,7 +207,7 @@ public class Poker {
             if (currentPlayer == buttonPlayer) {
                 return;
             }
-            
+
             currentPlayer.removeBetChips();
         }
     }
@@ -236,7 +236,7 @@ public class Poker {
 
         CircularListIterator<Player> it = players.listIterator();
         Player firstPlayer = it.next();
-        int count = firstPlayer.canPlay() ? 1 : 0;
+        int count = firstPlayer.isActive() ? 1 : 0;
 
         while (true) {
             Player currentPlayer = it.next();
@@ -245,117 +245,26 @@ public class Poker {
                 return count;
             }
 
-            if (currentPlayer.canPlay()) {
+            if (currentPlayer.isActive()) {
                 ++count;
             }
         }
-    }
-
-    private Action act(Player player) {
-        Integer choice = null;
-
-        while (true) {
-            player.output(player.getName() + ": " + ACT_PROMPT_MESSAGE);
-            player.output(betInfo());
-            choice = player.getIntInput();
-
-            if ((choice != null)
-                    && (choice >= 0 && choice <= 4)
-                    && (ACTIONS[choice] != Action.RAISE || canPlayerRaise(player))
-                    && (ACTIONS[choice] != Action.CHECK || player == whoRaised)
-                    && (ACTIONS[choice] != Action.FOLD || player != whoRaised)
-                    && (ACTIONS[choice] != Action.CALL || player != whoRaised)) {
-                break;
-            }
-        }
-
-        return ACTIONS[choice];
-    }
-
-    private void updatePlayer(Player player, Action action) {
-        switch (action) {
-            case ALL_IN:
-                output("NOT DONE YET");
-                break;
-
-            case CALL:
-                player.setCurrentBet(highestBet);
-                break;
-
-            case CHECK:
-                player.setCurrentBet(highestBet);
-                break;
-
-            case FOLD:
-                player.fold();
-                break;
-
-            case RAISE:
-                highestBet += getPlayerRaise(player);
-                player.setCurrentBet(highestBet);
-                break;
-
-            default:
-        }
-    }
-
-    private int getPlayerRaise(Player player) {
-        Integer raise;
-        int maxRaise = player.getChips() - highestBet;
-        
-        while(true){
-            player.output(player.getName() + ": " + ACT_PROMPT_MESSAGE);
-            player.output(betInfo());
-            player.output(raiseExample());
-            raise = player.getIntInput();
-            
-            if (raise != null
-                    && raise >= bigBlind
-                    && (raise % bigBlind == 0)
-                    && raise < maxRaise) {
-                break;
-            }
-        }
-        
-        return raise;
-    }
-
-    private boolean canPlayerRaise(Player player) {
-
-        return ((player.getChips() - highestBet) / bigBlind) >= 1;
-    }
-
-    private String raiseExample() {
-        int multiple = (1 + (int) (3 * Math.random()));
-        int raiseExample = multiple * bigBlind;
-        String message
-                = "\nThe raise must be a multiple of " + bigBlind
-                + "\nExample: a raise might be " + raiseExample
-                + "\nYour total bet would be then: " + highestBet + " + "
-                + raiseExample + " = " + (highestBet + raiseExample) + "\n";
-
-        return message;
-    }
-
-    private String betInfo() {
-        return "The highest bet is " + highestBet + " chips " + "and the big "
-                + "blind equals " + bigBlind + "\n";
     }
 
     /**
      * deal a card to all the players starting form the small blind
      */
     public void dealOneCardToPlayers() {
-        CircularListIterator<Player> it 
+        CircularListIterator<Player> it
                 = listIteratorToPlayer(smallBlindPlayer);
         Player currentPlayer = it.next();
-        
-        while(true){
+
+        while (true) {
             currentPlayer.addCard(removeTopCard());
             output("currentPlayer = " + currentPlayer.toString());
             currentPlayer = it.next();
-            
-            if(currentPlayer == smallBlindPlayer){
+
+            if (currentPlayer == smallBlindPlayer) {
                 break;
             }
         }

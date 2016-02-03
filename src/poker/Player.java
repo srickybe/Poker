@@ -22,6 +22,14 @@ public class Player {
         Action.RAISE
     };
         
+    private final String ACT_PROMPT_MESSAGE
+            = "Type\n"
+            + "0, TO " + ACTIONS[0].toString() + "\n"
+            + "1, TO " + ACTIONS[1].toString() + "\n"
+            + "2, TO " + ACTIONS[2].toString() + "\n"
+            + "3, TO " + ACTIONS[3].toString() + "\n"
+            + "4, TO " + ACTIONS[4].toString() + "\n";
+    
     private final String name;
     private final ArrayList<Card> holeCards;
     private Integer chips;
@@ -70,20 +78,47 @@ public class Player {
         output(name + "\tcurrent bet = " + currentBet);
     }
     
-    public Action act(
-            String promptMessage,
-            String betInfo) {
+    public int getActionChoice(){
         while (true) {
-            output(promptMessage);
-            output(betInfo);
+            output(getName() + ": " + ACT_PROMPT_MESSAGE);
 
             Integer choice = getIntInput();
 
             if (choice != null && choice >= 0 && choice <= 4) {
-                return ACTIONS[choice];
+                return choice;
             }
+        }   
+    }
+    
+    public Decision act(int bigBlind, int highestBet){
+        Action chosenAction = ACTIONS[this.getActionChoice()];
+        int bet = this.bet(chosenAction, bigBlind, highestBet);
+        
+        return new Decision(chosenAction, bet);
+    }
+    
+    int bet(Action action, int bigBlind, int highestBet) {
+        switch (action) {
+            case ALL_IN:
+                return getChips();
+                
+            case CALL:
+                return highestBet;
+                
+            case CHECK:
+                return highestBet;
+                
+            case FOLD:
+                return currentBet;
+                
+            case RAISE:
+                return highestBet + raise(bigBlind, highestBet);
+                
+            default:
+                return -1;
         }
     }
+    
     
     /**
      * Adds a card to the player's pocket if the number of cards of the 
@@ -137,7 +172,7 @@ public class Player {
         }
     }
     
-    public boolean canPlay(){
+    public boolean isActive(){
         return !hasFolded();
     }
     
@@ -161,10 +196,6 @@ public class Player {
     
     public void output(String message) {
         System.out.println(message);
-    }
-    
-    public void outputError(String message){
-        System.err.println(message);
     }
     
     public void removeBetChips(){
@@ -205,21 +236,44 @@ public class Player {
                 break;
             }
         }
+    }
+
+    private int raise(int bigBlind, int highestBet) {
+        Integer raise;
+        int maxRaise = getChips() - highestBet;
         
-        player.output(player.toString());
-        int bigBlind = 25;
-        int highestBet = 100 + (int)(10 * Math.random()) * 25;
-        player.output("This is the highest bet:" + highestBet);
-        
-        
-        /*for (int i = 0; i < 4; ++i) {
-            Decision decision = 
-                    player.actGivenBigBlindAndHighestBet(bigBlind, highestBet);
-            System.out.println("Player's bet = " + decision.getChips());
+        while (true) {
+            output(getName() + ": " + ACT_PROMPT_MESSAGE);
+            output(betInfo(bigBlind, highestBet));
+            output(raiseExample(bigBlind, highestBet));
+            raise = this.getIntInput();
             
-            if(decision.getAction() == Action.RAISE){
-                highestBet = decision.getChips();
+            if (raise != null && raise >= bigBlind && 
+                    (raise % bigBlind == 0) && raise < maxRaise) {
+                break;
             }
-        }*/
+        }
+        return raise;
+    }
+    
+    private String betInfo(int bigBlind, int highestBet) {
+        return "The highest bet is " + highestBet + " chips " + "and the big "
+                + "blind equals " + bigBlind + "\n";
+    }
+    
+    private String raiseExample(int bigBlind, int highestBet) {
+        int multiple = (1 + (int) (3 * Math.random()));
+        int raiseExample = multiple * bigBlind;
+        String message
+                = "\nThe raise must be a multiple of " + bigBlind
+                + "\nExample: a raise might be " + raiseExample
+                + "\nYour total bet would be then: " + highestBet + " + "
+                + raiseExample + " = " + (highestBet + raiseExample) + "\n";
+
+        return message;
+    }
+
+    boolean canRaise(int bigBlind, int highestBet) {
+        return ((this.getChips() - highestBet) / bigBlind) >= 1;
     }
 }
