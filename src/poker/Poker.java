@@ -120,7 +120,7 @@ public class Poker {
             if (currentPlayer.isActive()) {
                 Decision decision = getDecision(currentPlayer);
 
-                applyDecision(decision, currentPlayer);
+                apply(decision, currentPlayer);
 
                 if (actionEndedRound(decision.getAction(), currentPlayer)) {
                     break;
@@ -144,7 +144,7 @@ public class Poker {
         return decision;
     }
 
-    private void applyDecision(Decision decision, Player currentPlayer) {
+    private void apply(Decision decision, Player currentPlayer) {
         switch (decision.getAction()) {
             case CALL:
 
