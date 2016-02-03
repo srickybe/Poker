@@ -118,15 +118,7 @@ public class Poker {
             Player currentPlayer = it.next();
 
             if (currentPlayer.isActive()) {
-                Decision decision;
-
-                while (true) {
-                    decision = currentPlayer.act(bigBlind, highestBet);
-
-                    if (isValidAction(decision.getAction(), currentPlayer)) {
-                        break;
-                    }
-                }
+                Decision decision = getDecision(currentPlayer);
 
                 applyDecision(decision, currentPlayer);
 
@@ -136,6 +128,20 @@ public class Poker {
 
             }
         }
+    }
+
+    private Decision getDecision(Player currentPlayer) {
+        Decision decision;
+        
+        while (true) {
+            decision = currentPlayer.act(bigBlind, highestBet);
+            
+            if (isValidAction(decision.getAction(), currentPlayer)) {
+                break;
+            }
+        }
+        
+        return decision;
     }
 
     private void applyDecision(Decision decision, Player currentPlayer) {
@@ -157,7 +163,7 @@ public class Poker {
                 break;
 
             default:
-                output("CASE." + decision.getAction() + "not treated");
+                output("CASE." + decision.getAction() + " not treated yet");
         }
     }
 
