@@ -5,8 +5,6 @@
  */
 package poker;
 
-import java.util.ListIterator;
-
 /**
  * Invariant: the cards forming the hand are sorted
  * cards[0] is the highest ranked card of the hand

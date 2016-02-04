@@ -33,7 +33,6 @@ public class Poker {
         muck = new Stack();
         cards = new CardDeck();
         players = createPlayers();
-        game();
     }
 
     private void game() {
@@ -132,15 +131,15 @@ public class Poker {
 
     private Decision getDecision(Player currentPlayer) {
         Decision decision;
-        
+
         while (true) {
             decision = currentPlayer.act(bigBlind, highestBet);
-            
+
             if (isValidAction(decision.getAction(), currentPlayer)) {
                 break;
             }
         }
-        
+
         return decision;
     }
 
@@ -266,7 +265,7 @@ public class Poker {
         Player currentPlayer = it.next();
 
         while (true) {
-            currentPlayer.addCard(removeTopCard());
+            currentPlayer.addToHole(removeTopCard());
             output("currentPlayer = " + currentPlayer.toString());
             currentPlayer = it.next();
 
@@ -387,6 +386,7 @@ public class Poker {
     }
 
     public static void main(String args[]) {
-        Poker game = new Poker();
+        Poker poker = new Poker();
+        poker.game();
     }
 }

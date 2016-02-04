@@ -10,6 +10,7 @@ import java.util.Scanner;
 
 /**
  * Invariant: the number of cards in the pocket must be inferior or equal to two
+ *
  * @author john
  */
 public class Player {
@@ -21,7 +22,7 @@ public class Player {
         Action.FOLD,
         Action.RAISE
     };
-        
+
     private final String ACT_PROMPT_MESSAGE
             = "Type\n"
             + "0, TO " + ACTIONS[0].toString() + "\n"
@@ -30,43 +31,44 @@ public class Player {
             + "3, TO " + ACTIONS[3].toString() + "\n"
             + "4, TO " + ACTIONS[4].toString() + "\n";
     
+    private final DecreasingSense CARD_COMPARATOR = new DecreasingSense();
+
     private final String name;
-    private final ArrayList<Card> holeCards;
+    private final ArrayList<Card> hole;
+    private final ArrayList<Card> cards;
     private Integer chips;
     private int currentBet;
     private boolean hasFolded;
 
     /**
      * Construct a player with the name "name"
+     *
      * @param name name of the player
      * @param chips number of player's chips
      */
     public Player(String name, int chips) {
         this.name = name;
-        holeCards = new ArrayList<>();
+        hole = new ArrayList<>();
+        cards = new ArrayList<>();
         this.chips = chips;
         currentBet = 0;
         hasFolded = false;
     }
-    
-    public Card getCard(int index){
-        return holeCards.get(index);
+
+    public Card getCard(int index) {
+        return hole.get(index);
     }
-    
-    public Integer getChips(){
+
+    public Integer getChips() {
         return chips;
     }
 
     public Integer getCurrentBet() {
         return currentBet;
     }
-    
+
     public String getName() {
         return name;
-    }
-
-    public int getNumberOfCards(){
-        return holeCards.size();
     }
 
     public boolean hasFolded() {
@@ -77,8 +79,8 @@ public class Player {
         this.currentBet = currentBet;
         output(name + "\tcurrent bet = " + currentBet);
     }
-    
-    public int getActionChoice(){
+
+    public int getActionChoice() {
         while (true) {
             output(getName() + ": " + ACT_PROMPT_MESSAGE);
 
@@ -87,72 +89,75 @@ public class Player {
             if (choice != null && choice >= 0 && choice <= 4) {
                 return choice;
             }
-        }   
+        }
     }
-    
-    public Decision act(int bigBlind, int highestBet){
+
+    public Decision act(int bigBlind, int highestBet) {
         Action chosenAction = ACTIONS[this.getActionChoice()];
         int bet = this.bet(chosenAction, bigBlind, highestBet);
-        
+
         return new Decision(chosenAction, bet);
     }
-    
+
     int bet(Action action, int bigBlind, int highestBet) {
         switch (action) {
             case ALL_IN:
                 return getChips();
-                
+
             case CALL:
                 return highestBet;
-                
+
             case CHECK:
                 return highestBet;
-                
+
             case FOLD:
                 return currentBet;
-                
+
             case RAISE:
                 return highestBet + raise(bigBlind, highestBet);
-                
+
             default:
                 return -1;
         }
     }
-    
-    
-    /**
-     * Adds a card to the player's pocket if the number of cards of the 
-     * player's pocket is strictly inferior to two
-     * @param card card to be added to the player's pocket
-     * @return true if the card has been added, false otherwise
-     */
-    public boolean addCard(Card card) {
-        if(holeCards.isEmpty())
-            return holeCards.add(card);
- 
-        if(holeCards.size() == 1){
-            if(holeCards.get(0).compareTo(card) > 0)
-                return holeCards.add(card);
-          
-            holeCards.add(0, card);
-            return true;
-        }
 
-        return false;
+    private void addToCards(Card card) {
+        if (cards.size() < 7) {
+            if(!cards.contains(card)){
+                cards.add(card);
+                cards.sort(CARD_COMPARATOR);
+            }
+        }
     }
 
+    public void addCommunity(Card card) {
+        addToCards(card);
+    }
+
+    public void addToHole(Card card){
+        if(hole.size() < 2){
+            if(!hole.contains(card)){
+                hole.add(card);
+                hole.sort(CARD_COMPARATOR);
+                addToCards(card);
+            }
+        }
+    }
+    
     public int betSmallBlind() {
         String message = this.getName() + ", bet the small blind, please:\n";
         Integer bet;
+
         while (true) {
             this.output(message);
             bet = this.getIntInput();
+
             if (bet != null) {
                 return bet;
             }
         }
     }
-    
+
     public int betBigBlind(int smallBlind) {
         String promptMessage = this.getName()
                 + ", pay the big blind, please. The small blind is "
@@ -171,96 +176,103 @@ public class Player {
             this.output(errorMessage);
         }
     }
-    
-    public boolean isActive(){
+
+    public boolean isActive() {
         return !hasFolded();
     }
-    
+
     public Integer getIntInput() {
         Scanner input = new Scanner(System.in);
         Integer entry;
 
         try {
             entry = input.nextInt();
-        } 
-        catch (Exception e) {
+        } catch (Exception e) {
             return null;
         }
 
         return entry;
     }
 
-    public void fold(){
+    public void fold() {
         hasFolded = true;
     }
-    
+
     public void output(String message) {
         System.out.println(message);
     }
-    
-    public void removeBetChips(){
+
+    public void removeBetChips() {
         chips -= currentBet;
     }
-    
+
     @Override
     public String toString() {
-        return "Player{" + "name=" + name + ", pocket=" + holeCards + ", chips =" +
-                chips + "}";
+        return "Player{" + "name=" + name + ", hole=" + hole + 
+                ", cards=" + cards + ", chips=" + chips + 
+                ", currentBet=" + currentBet + ", hasFolded=" + hasFolded + '}';
     }
-    
-    public static void main(String args[]){
-        Player player = new Player("Ricky", 500);
-        
-        while(true){
-            int rank = (int)(13.0 * Math.random());
-            int suit = (int)(4.0 * Math.random());
-            Card card = new Card(rank, suit);
-            
-            if(player.getNumberOfCards() == 0)
-                player.addCard(card);
-            
-            if(player.getNumberOfCards() == 1){
-                rank = (int)(13.0 * Math.random());
-                
-                while(player.getCard(0).getRank() != rank){
-                    rank = (int)(13.0 * Math.random());
-                }
-                
-                suit = (int)(4.0 * Math.random());
-                
-                while(player.getCard(0).getSuit() == suit){
-                    suit = (int)(4.0 * Math.random());
-                }
-                
-                player.addCard(new Card(rank, suit));
-                break;
+
+    public static void main(String args[]) {
+        /*ArrayList<Card> cards = new ArrayList<>();
+
+        for (int i = 0; i < 10; ++i) {
+            Card card = Card.random();
+            System.out.println("card = " + card);
+
+            while (cards.contains(card)) {
+                card = Card.random();
             }
+
+            cards.add(card);
+        }
+
+        cards.sort(new DecreasingSense());
+
+        for (int i = 0; i < 10; ++i) {
+            System.out.println("card" + i + cards.get(i));
+        }*/
+        
+        Player gery = new Player("Gery", 500);
+        
+        for(int i = 0; i < 5; ++i){
+            Card card = Card.random();
+            gery.addToHole(card);
+            System.out.println("card" + i + " = " + card);
+        }
+        
+        System.out.println("gery = " + gery);
+        
+        for(int i = 0; i < 10; ++i){
+            Card card = Card.random();
+            gery.addCommunity(card);
+            System.out.println("gery = " + gery);
         }
     }
 
     private int raise(int bigBlind, int highestBet) {
         Integer raise;
         int maxRaise = getChips() - highestBet;
-        
+
         while (true) {
             output(getName() + ": " + ACT_PROMPT_MESSAGE);
             output(betInfo(bigBlind, highestBet));
             output(raiseExample(bigBlind, highestBet));
             raise = this.getIntInput();
-            
-            if (raise != null && raise >= bigBlind && 
-                    (raise % bigBlind == 0) && raise < maxRaise) {
+
+            if (raise != null && raise >= bigBlind
+                    && (raise % bigBlind == 0) && raise < maxRaise) {
                 break;
             }
         }
         return raise;
     }
-    
+
     private String betInfo(int bigBlind, int highestBet) {
         return "The highest bet is " + highestBet + " chips " + "and the big "
                 + "blind equals " + bigBlind + "\n";
     }
-    
+
     private String raiseExample(int bigBlind, int highestBet) {
         int multiple = (1 + (int) (3 * Math.random()));
         int raiseExample = multiple * bigBlind;
