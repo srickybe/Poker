@@ -13,10 +13,28 @@ import java.util.Objects;
  */
 public class Card implements Comparable<Card>{
 
-    private static final String SUITS[] = {"CLUB", "DIAMOND", "HEART", "SPADE"};
+    private static final String SUITS[] = {
+        "CLUBS", 
+        "DIAMONDS", 
+        "HEARTS", 
+        "SPADES"
+    };
+    
     private static final String RANKS[] = {
-        "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE", "TEN",
-        "JACK", "QUEEN", "KING", "ACE"};
+        "TWO", 
+        "THREE", 
+        "FOUR", 
+        "FIVE", 
+        "SIX", 
+        "SEVEN", 
+        "EIGHT", 
+        "NINE", 
+        "TEN",
+        "JACK", 
+        "QUEEN", 
+        "KING", 
+        "ACE"};
+    
     public static Card random(){
         return new Card(
                 (int) (13.0 * Math.random()), 

@@ -34,8 +34,8 @@ public class Player {
     private final DecreasingSense CARD_COMPARATOR = new DecreasingSense();
 
     private final String name;
-    private final ArrayList<Card> hole;
-    private final ArrayList<Card> cards;
+    private final Hand hole;
+    private final Hand cards;
     private Integer chips;
     private int currentBet;
     private boolean hasFolded;
@@ -48,15 +48,15 @@ public class Player {
      */
     public Player(String name, int chips) {
         this.name = name;
-        hole = new ArrayList<>();
-        cards = new ArrayList<>();
+        hole = new Hand();
+        cards = new Hand();
         this.chips = chips;
         currentBet = 0;
         hasFolded = false;
     }
 
     public Card getCard(int index) {
-        return hole.get(index);
+        return hole.getCard(index);
     }
 
     public Integer getChips() {
@@ -122,12 +122,7 @@ public class Player {
     }
 
     private void addToCards(Card card) {
-        if (cards.size() < 7) {
-            if(!cards.contains(card)){
-                cards.add(card);
-                cards.sort(CARD_COMPARATOR);
-            }
-        }
+        cards.addCard(card);
     }
 
     public void addCommunity(Card card) {
@@ -136,10 +131,8 @@ public class Player {
 
     public void addToHole(Card card){
         if(hole.size() < 2){
-            if(!hole.contains(card)){
-                hole.add(card);
-                hole.sort(CARD_COMPARATOR);
-                addToCards(card);
+            if(!hole.addCard(card)){
+                //throw an exception here!
             }
         }
     }

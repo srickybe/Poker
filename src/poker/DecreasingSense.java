@@ -15,6 +15,14 @@ public class DecreasingSense implements Comparator<Card> {
 
     @Override
     public int compare(Card c1, Card c2) {
+        if (c1 == null) {
+            return c2 == null ? 0 : 1;
+        }
+
+        if (c2 == null) {
+            return -1;
+        }
+
         int res = c2.getRank() - c1.getRank();
 
         if (res == 0) {
