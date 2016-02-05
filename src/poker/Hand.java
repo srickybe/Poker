@@ -48,35 +48,35 @@ public class Hand {
     }
 
     private boolean isFourOfAKind() {
-        return (cards.get(0).hasEqualRank(cards.get(1))
-                && cards.get(0).hasEqualRank(cards.get(2))
-                && cards.get(0).hasEqualRank(cards.get(3)))
-                || (cards.get(1).hasEqualRank(cards.get(2))
-                && cards.get(1).hasEqualRank(cards.get(3))
-                && cards.get(1).hasEqualRank(cards.get(4)));
+        return (cards.get(0).sameRank(cards.get(1))
+                && cards.get(0).sameRank(cards.get(2))
+                && cards.get(0).sameRank(cards.get(3)))
+                || (cards.get(1).sameRank(cards.get(2))
+                && cards.get(1).sameRank(cards.get(3))
+                && cards.get(1).sameRank(cards.get(4)));
     }
 
     private boolean isFullHouse() {
-        return (cards.get(0).hasEqualRank(cards.get(1))
-                && cards.get(1).hasEqualRank(cards.get(2))
-                && cards.get(3).hasEqualRank(cards.get(4)))
-                || (cards.get(0).hasEqualRank(cards.get(1))
-                && cards.get(2).hasEqualRank(cards.get(3))
-                && cards.get(3).hasEqualRank(cards.get(4)));
+        return (cards.get(0).sameRank(cards.get(1))
+                && cards.get(1).sameRank(cards.get(2))
+                && cards.get(3).sameRank(cards.get(4)))
+                || (cards.get(0).sameRank(cards.get(1))
+                && cards.get(2).sameRank(cards.get(3))
+                && cards.get(3).sameRank(cards.get(4)));
     }
 
     private boolean isFlush() {
-        return cards.get(0).hasSameSuit(cards.get(1))
-                && cards.get(1).hasSameSuit(cards.get(2))
-                && cards.get(2).hasSameSuit(cards.get(3))
-                && cards.get(3).hasSameSuit(cards.get(4));
+        return cards.get(0).sameSuit(cards.get(1))
+                && cards.get(1).sameSuit(cards.get(2))
+                && cards.get(2).sameSuit(cards.get(3))
+                && cards.get(3).sameSuit(cards.get(4));
     }
 
     private boolean isStraight() {
-        return (cards.get(0).isOneRankHigher(cards.get(1))
-                && cards.get(1).isOneRankHigher(cards.get(2))
-                && cards.get(2).isOneRankHigher(cards.get(3))
-                && cards.get(3).isOneRankHigher(cards.get(4)))
+        return (cards.get(0).oneRankHigher(cards.get(1))
+                && cards.get(1).oneRankHigher(cards.get(2))
+                && cards.get(2).oneRankHigher(cards.get(3))
+                && cards.get(3).oneRankHigher(cards.get(4)))
                 || (cards.get(0).getRank().equals(Rank.ACE)
                 && cards.get(1).getRank().equals(Rank.FIVE)
                 && cards.get(2).getRank().equals(Rank.FOUR)
@@ -85,34 +85,34 @@ public class Hand {
     }
 
     private boolean isThreeOfAKind() {
-        return (cards.get(0).hasEqualRank(cards.get(1))
-                && cards.get(1).hasEqualRank(cards.get(2)))
-                || (cards.get(1).hasEqualRank(cards.get(2))
-                && cards.get(2).hasEqualRank(cards.get(3)))
-                || (cards.get(2).hasEqualRank(cards.get(3))
-                && cards.get(3).hasEqualRank(cards.get(4)));
+        return (cards.get(0).sameRank(cards.get(1))
+                && cards.get(1).sameRank(cards.get(2)))
+                || (cards.get(1).sameRank(cards.get(2))
+                && cards.get(2).sameRank(cards.get(3)))
+                || (cards.get(2).sameRank(cards.get(3))
+                && cards.get(3).sameRank(cards.get(4)));
     }
 
     private boolean isTwoPairs() {
-        if (cards.get(0).hasEqualRank(cards.get(1))
-                && cards.get(2).hasEqualRank(cards.get(3))) {
+        if (cards.get(0).sameRank(cards.get(1))
+                && cards.get(2).sameRank(cards.get(3))) {
             return true;
         }
 
-        if (cards.get(0).hasEqualRank(cards.get(1))
-                && cards.get(3).hasEqualRank(cards.get(4))) {
+        if (cards.get(0).sameRank(cards.get(1))
+                && cards.get(3).sameRank(cards.get(4))) {
             return true;
         }
 
-        return cards.get(1).hasEqualRank(cards.get(2))
-                && cards.get(3).hasEqualRank(cards.get(4));
+        return cards.get(1).sameRank(cards.get(2))
+                && cards.get(3).sameRank(cards.get(4));
     }
 
     private boolean isOnePair() {
-        return cards.get(0).hasEqualRank(cards.get(1))
-                || cards.get(1).hasEqualRank(cards.get(2))
-                || cards.get(2).hasEqualRank(cards.get(3))
-                || cards.get(3).hasEqualRank(cards.get(4));
+        return cards.get(0).sameRank(cards.get(1))
+                || cards.get(1).sameRank(cards.get(2))
+                || cards.get(2).sameRank(cards.get(3))
+                || cards.get(3).sameRank(cards.get(4));
     }
 
     public Evaluation computeTypeAndValue() {
@@ -172,146 +172,146 @@ public class Hand {
     }
 
     private int computeStraightFlushValue() {
-        return cards.get(0).getRank().getNumeric();
+        return cards.get(0).getRank().getCardinal();
     }
 
     private int computeFourOfAKindValue() {
-        if (cards.get(0).hasEqualRank(cards.get(1))
-                && cards.get(0).hasEqualRank(cards.get(2))
-                && cards.get(0).hasEqualRank(cards.get(3))) {
-            return cards.get(0).getRank().getNumeric() * 16
-                    + cards.get(4).getRank().getNumeric();
+        if (cards.get(0).sameRank(cards.get(1))
+                && cards.get(0).sameRank(cards.get(2))
+                && cards.get(0).sameRank(cards.get(3))) {
+            return cards.get(0).getRank().getCardinal() * 16
+                    + cards.get(4).getRank().getCardinal();
         }
 
-        if (cards.get(1).hasEqualRank(cards.get(2))
-                && cards.get(1).hasEqualRank(cards.get(3))
-                && cards.get(1).hasEqualRank(cards.get(4))) {
-            return cards.get(1).getRank().getNumeric() * 16
-                    + cards.get(0).getRank().getNumeric();
+        if (cards.get(1).sameRank(cards.get(2))
+                && cards.get(1).sameRank(cards.get(3))
+                && cards.get(1).sameRank(cards.get(4))) {
+            return cards.get(1).getRank().getCardinal() * 16
+                    + cards.get(0).getRank().getCardinal();
         }
 
         return -1;
     }
 
     private int computeFullHouseValue() {
-        if (cards.get(0).hasEqualRank(cards.get(1))
-                && cards.get(1).hasEqualRank(cards.get(2))
-                && cards.get(3).hasEqualRank(cards.get(4))) {
-            return cards.get(0).getRank().getNumeric() * 16
-                    + cards.get(3).getRank().getNumeric();
+        if (cards.get(0).sameRank(cards.get(1))
+                && cards.get(1).sameRank(cards.get(2))
+                && cards.get(3).sameRank(cards.get(4))) {
+            return cards.get(0).getRank().getCardinal() * 16
+                    + cards.get(3).getRank().getCardinal();
         }
 
-        if (cards.get(0).hasEqualRank(cards.get(1))
-                && cards.get(2).hasEqualRank(cards.get(3))
-                && cards.get(3).hasEqualRank(cards.get(4))) {
-            return cards.get(2).getRank().getNumeric() * 16
-                    + cards.get(0).getRank().getNumeric();
+        if (cards.get(0).sameRank(cards.get(1))
+                && cards.get(2).sameRank(cards.get(3))
+                && cards.get(3).sameRank(cards.get(4))) {
+            return cards.get(2).getRank().getCardinal() * 16
+                    + cards.get(0).getRank().getCardinal();
         }
 
         return -1;
     }
 
     private int computeFlushValue() {
-        return cards.get(0).getRank().getNumeric();
+        return cards.get(0).getRank().getCardinal();
     }
 
     private int computeStraightValue() {
         if (!cards.get(0).getRank().equals(Rank.ACE) || 
                 !cards.get(1).getRank().equals(Rank.FIVE)) {
-            return cards.get(0).getRank().getNumeric();
+            return cards.get(0).getRank().getCardinal();
         }
 
-        return Rank.FIVE.getNumeric();
+        return Rank.FIVE.getCardinal();
     }
 
     private int computeThreeOfAKindValue() {
-        if (cards.get(0).hasEqualRank(cards.get(1))
-                && cards.get(1).hasEqualRank(cards.get(2))) {
-            return cards.get(0).getRank().getNumeric() * 256 + 
-                    cards.get(3).getRank().getNumeric() * 16
-                    + cards.get(4).getRank().getNumeric();
+        if (cards.get(0).sameRank(cards.get(1))
+                && cards.get(1).sameRank(cards.get(2))) {
+            return cards.get(0).getRank().getCardinal() * 256 + 
+                    cards.get(3).getRank().getCardinal() * 16
+                    + cards.get(4).getRank().getCardinal();
         }
 
-        if (cards.get(1).hasEqualRank(cards.get(2))
-                && cards.get(2).hasEqualRank(cards.get(3))) {
-            return cards.get(1).getRank().getNumeric() * 256 + 
-                    cards.get(0).getRank().getNumeric() * 16
-                    + cards.get(4).getRank().getNumeric();
+        if (cards.get(1).sameRank(cards.get(2))
+                && cards.get(2).sameRank(cards.get(3))) {
+            return cards.get(1).getRank().getCardinal() * 256 + 
+                    cards.get(0).getRank().getCardinal() * 16
+                    + cards.get(4).getRank().getCardinal();
         }
 
-        if (cards.get(2).hasEqualRank(cards.get(3))
-                && cards.get(3).hasEqualRank(cards.get(4))) {
-            return cards.get(2).getRank().getNumeric() * 256 + 
-                    cards.get(0).getRank().getNumeric() * 16
-                    + cards.get(1).getRank().getNumeric();
+        if (cards.get(2).sameRank(cards.get(3))
+                && cards.get(3).sameRank(cards.get(4))) {
+            return cards.get(2).getRank().getCardinal() * 256 + 
+                    cards.get(0).getRank().getCardinal() * 16
+                    + cards.get(1).getRank().getCardinal();
         }
 
         return -1;
     }
 
     private int computeTwoPairsValue() {
-        if (cards.get(0).hasEqualRank(cards.get(1))
-                && cards.get(2).hasEqualRank(cards.get(3))) {
-            return cards.get(0).getRank().getNumeric() * 256 + 
-                    cards.get(2).getRank().getNumeric() * 16
-                    + cards.get(4).getRank().getNumeric();
+        if (cards.get(0).sameRank(cards.get(1))
+                && cards.get(2).sameRank(cards.get(3))) {
+            return cards.get(0).getRank().getCardinal() * 256 + 
+                    cards.get(2).getRank().getCardinal() * 16
+                    + cards.get(4).getRank().getCardinal();
         }
 
-        if (cards.get(0).hasEqualRank(cards.get(1))
-                && cards.get(3).hasEqualRank(cards.get(4))) {
-            return cards.get(0).getRank().getNumeric() * 256 + 
-                    cards.get(3).getRank().getNumeric() * 16
-                    + cards.get(2).getRank().getNumeric();
+        if (cards.get(0).sameRank(cards.get(1))
+                && cards.get(3).sameRank(cards.get(4))) {
+            return cards.get(0).getRank().getCardinal() * 256 + 
+                    cards.get(3).getRank().getCardinal() * 16
+                    + cards.get(2).getRank().getCardinal();
         }
 
-        if (cards.get(1).hasEqualRank(cards.get(2))
-                && cards.get(3).hasEqualRank(cards.get(4))) {
-            return cards.get(1).getRank().getNumeric() * 256 + 
-                    cards.get(3).getRank().getNumeric() * 16
-                    + cards.get(0).getRank().getNumeric();
+        if (cards.get(1).sameRank(cards.get(2))
+                && cards.get(3).sameRank(cards.get(4))) {
+            return cards.get(1).getRank().getCardinal() * 256 + 
+                    cards.get(3).getRank().getCardinal() * 16
+                    + cards.get(0).getRank().getCardinal();
         }
 
         return -1;
     }
 
     private int computeOnePairValue() {
-        if (cards.get(0).hasEqualRank(cards.get(1))) {
-            return cards.get(0).getRank().getNumeric() * 4096 
-                    + cards.get(2).getRank().getNumeric() * 256
-                    + cards.get(3).getRank().getNumeric() * 16 
-                    + cards.get(4).getRank().getNumeric();
+        if (cards.get(0).sameRank(cards.get(1))) {
+            return cards.get(0).getRank().getCardinal() * 4096 
+                    + cards.get(2).getRank().getCardinal() * 256
+                    + cards.get(3).getRank().getCardinal() * 16 
+                    + cards.get(4).getRank().getCardinal();
         }
 
-        if (cards.get(1).hasEqualRank(cards.get(2))) {
-            return cards.get(1).getRank().getNumeric() * 4096 
-                    + cards.get(0).getRank().getNumeric() * 256
-                    + cards.get(3).getRank().getNumeric() * 16 
-                    + cards.get(4).getRank().getNumeric();
+        if (cards.get(1).sameRank(cards.get(2))) {
+            return cards.get(1).getRank().getCardinal() * 4096 
+                    + cards.get(0).getRank().getCardinal() * 256
+                    + cards.get(3).getRank().getCardinal() * 16 
+                    + cards.get(4).getRank().getCardinal();
         }
 
-        if (cards.get(2).hasEqualRank(cards.get(3))) {
-            return cards.get(2).getRank().getNumeric() * 4096 
-                    + cards.get(0).getRank().getNumeric() * 256
-                    + cards.get(1).getRank().getNumeric() * 16 
-                    + cards.get(4).getRank().getNumeric();
+        if (cards.get(2).sameRank(cards.get(3))) {
+            return cards.get(2).getRank().getCardinal() * 4096 
+                    + cards.get(0).getRank().getCardinal() * 256
+                    + cards.get(1).getRank().getCardinal() * 16 
+                    + cards.get(4).getRank().getCardinal();
         }
 
-        if (cards.get(3).hasEqualRank(cards.get(4))) {
-            return cards.get(3).getRank().getNumeric() * 4096 
-                    + cards.get(0).getRank().getNumeric() * 256
-                    + cards.get(1).getRank().getNumeric() * 16 
-                    + cards.get(2).getRank().getNumeric();
+        if (cards.get(3).sameRank(cards.get(4))) {
+            return cards.get(3).getRank().getCardinal() * 4096 
+                    + cards.get(0).getRank().getCardinal() * 256
+                    + cards.get(1).getRank().getCardinal() * 16 
+                    + cards.get(2).getRank().getCardinal();
         }
 
         return -1;
     }
 
     private int computeHighCardValue() {
-        return cards.get(0).getRank().getNumeric() * 65536 
-                + cards.get(1).getRank().getNumeric() * 4096
-                + cards.get(2).getRank().getNumeric() * 256 
-                + cards.get(3).getRank().getNumeric() * 16
-                + cards.get(4).getRank().getNumeric();
+        return cards.get(0).getRank().getCardinal() * 65536 
+                + cards.get(1).getRank().getCardinal() * 4096
+                + cards.get(2).getRank().getCardinal() * 256 
+                + cards.get(3).getRank().getCardinal() * 16
+                + cards.get(4).getRank().getCardinal();
     }
 
     public static Hand bestHandFrom7Cards(Hand hnd) {

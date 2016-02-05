@@ -13,12 +13,18 @@ import java.util.Stack;
  */
 public class CardDeck {
 
+    /**
+     * Create a 52-card deck. The cards are ordered from rank 2 to rank ace, and
+     * the suits in alphabetic order. The card at the top is Ace Spades and at
+     * the bottom, Two Clubs.
+     * @return a 52-card deck
+     */
     public static CardDeck createFiftyTwoCardsDeck() {
         CardDeck cardDeck = new CardDeck();
 
-        for (Rank r : Rank.values()) {
-            for (Suit s : Suit.values()) {
-                cardDeck.cards.add(new Card(r, s));
+        for (Card c : Card.values()) {
+            if (!cardDeck.add(c)) {
+                //TODO throw an Exception
             }
         }
 
@@ -27,13 +33,12 @@ public class CardDeck {
 
     private final Stack<Card> cards;
 
-    /**
-     * Create a 52-card deck. The cards are ordered from the ranks 2 to ace, and
-     * the suits in alphabetic order. The card at the top is Ace Spade and at
-     * the bottom, Two Club.
-     */
     public CardDeck() {
         cards = new Stack<>();
+    }
+
+    private boolean add(Card c) {
+        return cards.add(c);
     }
 
     public Card pop() {
@@ -59,11 +64,16 @@ public class CardDeck {
         String res = "CardDeck{" + "cards=[";
 
         for (int i = 0; i < cards.size(); ++i) {
-            res += "\n" + i + ":" + cards.get(i);
+            res += "\n" /*+ i + ":" */ + cards.get(i);
         }
 
         res += "\n]}";
 
         return res;
+    }
+
+    public static void main(String args[]) {
+        CardDeck cardDeck = CardDeck.createFiftyTwoCardsDeck();
+        System.out.println("cardDeck" + cardDeck);
     }
 }

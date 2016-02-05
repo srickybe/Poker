@@ -23,13 +23,7 @@ public class DecreasingSense implements Comparator<Card> {
             return -1;
         }
 
-        int res = c2.getRank().getNumeric() - c1.getRank().getNumeric();
-
-        if (res == 0) {
-            return c2.getSuit().getNumeric() - c1.getSuit().getNumeric();
-        }
-
-        return res;
+        return c2.ordinal() - c1.ordinal();
     }
 
 }

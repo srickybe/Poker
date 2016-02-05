@@ -11,31 +11,31 @@ package poker;
  */
 public enum Rank {
 
-    ACE(15),
-    KING(14),
-    QUEEN(12),
-    JACK(11),
-    TEN(10),
-    NINE(9),
-    EIGHT(8),
-    SEVEN(7),
-    SIX(6),
-    FIVE(5),
-    FOUR(4),
+    TWO(2),
     THREE(3),
-    TWO(2);
+    FOUR(4),
+    FIVE(5),
+    SIX(6),
+    SEVEN(7),
+    EIGHT(8),
+    NINE(9),
+    TEN(10),
+    JACK(11),
+    QUEEN(12),
+    KING(13),
+    ACE(14);
 
-    private final int numeric;
+    private final int cardinal;
 
     Rank(int value) {
-        this.numeric = value;
+        this.cardinal = value;
     }
 
-    int getNumeric() {
-        return numeric;
+    int getCardinal() {
+        return cardinal;
     }
-    
-    public static Rank random(){
-        return Rank.values()[(int)(Rank.values().length * Math.random())];
+
+    public static Rank random() {
+        return Rank.values()[(int) (Rank.values().length * Math.random())];
     }
 }
