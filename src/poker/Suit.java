@@ -10,14 +10,23 @@ package poker;
  * @author ricky
  */
 public enum Suit {
+
     CLUBS(1),
     DIAMONDS(2),
     HEARTS(3),
     SPADES(4);
-    
-    int value;
-    
-    Suit(int value){
-        this.value = value;
+
+    private final int numeric;
+
+    Suit(int value) {
+        this.numeric = value;
+    }
+
+    public int getNumeric() {
+        return numeric;
+    }
+
+    public static Suit random() {
+        return Suit.values()[(int) (Suit.values().length * Math.random())];
     }
 }

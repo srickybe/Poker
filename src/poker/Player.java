@@ -35,7 +35,7 @@ public class Player {
 
     private final String name;
     private final Hand hole;
-    private final Hand cards;
+    private final Hand hand;
     private Integer chips;
     private int currentBet;
     private boolean hasFolded;
@@ -49,7 +49,7 @@ public class Player {
     public Player(String name, int chips) {
         this.name = name;
         hole = new Hand();
-        cards = new Hand();
+        hand = new Hand();
         this.chips = chips;
         currentBet = 0;
         hasFolded = false;
@@ -121,17 +121,20 @@ public class Player {
         }
     }
 
-    private void addToCards(Card card) {
-        cards.addCard(card);
+    private void addToHand(Card card) {
+        hand.addCard(card);
     }
 
     public void addCommunity(Card card) {
-        addToCards(card);
+        addToHand(card);
     }
 
     public void addToHole(Card card){
         if(hole.size() < 2){
-            if(!hole.addCard(card)){
+            if(hole.addCard(card)){
+                addToHand(card);
+            }
+            else{
                 //throw an exception here!
             }
         }
@@ -202,7 +205,7 @@ public class Player {
     @Override
     public String toString() {
         return "Player{" + "name=" + name + ", hole=" + hole + 
-                ", cards=" + cards + ", chips=" + chips + 
+                ", cards=" + hand + ", chips=" + chips + 
                 ", currentBet=" + currentBet + ", hasFolded=" + hasFolded + '}';
     }
 

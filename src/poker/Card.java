@@ -11,72 +11,54 @@ import java.util.Objects;
  *
  * @author john
  */
-public class Card implements Comparable<Card>{
 
-    private static final String SUITS[] = {
-        "CLUBS", 
-        "DIAMONDS", 
-        "HEARTS", 
-        "SPADES"
-    };
-    
-    private static final String RANKS[] = {
-        "TWO", 
-        "THREE", 
-        "FOUR", 
-        "FIVE", 
-        "SIX", 
-        "SEVEN", 
-        "EIGHT", 
-        "NINE", 
-        "TEN",
-        "JACK", 
-        "QUEEN", 
-        "KING", 
-        "ACE"};
-    
-    public static Card random(){
-        return new Card(
-                (int) (13.0 * Math.random()), 
-                (int) (4.0 * Math.random()));
+public class Card implements Comparable<Card> {
+
+    public static Card random() {
+        return new Card(Rank.random(), Suit.random());
+
     }
-    
-    private Integer rank;
-    private Integer suit;
+
+    private Rank rank;
+    private Suit suit;
 
     public Card() {
     }
 
-    public Card(int rank, int suit) {
-        set(rank, suit);
+    public Card(Rank rank, Suit suit) {
+        this.rank = rank;
+        this.suit = suit;
     }
 
     @Override
     public int hashCode() {
-        int hash = 7;
+        int hash = 5;
+        hash = 79 * hash + Objects.hashCode(this.rank);
+        hash = 79 * hash + Objects.hashCode(this.suit);
         return hash;
     }
+
 
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
         }
-        
+
         if (obj == null) {
             return false;
         }
-        
+
         if (getClass() != obj.getClass()) {
             return false;
         }
-        
+
         final Card other = (Card) obj;
-        
+
         if (!Objects.equals(this.rank, other.rank)) {
             return false;
         }
-        
+
         return Objects.equals(this.suit, other.suit);
     }
 
@@ -85,74 +67,58 @@ public class Card implements Comparable<Card>{
         return super.clone();
     }
 
-    
-    
-    public int getRank() {
+    public Rank getRank() {
         return rank;
     }
 
-    public int getSuit() {
+    public Suit getSuit() {
         return suit;
     }
 
-    public final void set(int rank, int suit) {
-        if (isValidRankAndSuit(rank, suit)) {
-            this.rank = rank;
-            this.suit = suit;
-        }
-    }
-
-    public boolean hasEqualRank(Card card){
+    public boolean hasEqualRank(Card card) {
         return Objects.equals(rank, card.rank);
     }
-    
-    public boolean hasSameSuit(Card card){
+
+    public boolean hasSameSuit(Card card) {
         return Objects.equals(suit, card.suit);
     }
-    
-    public boolean isOneRankHigher(Card card){
-        return rank == card.rank + 1;
-    }
-    
-    public boolean isValidSuit(int suit) {
-        return suit >= 0 && suit < 4;
-    }
 
-    public boolean isValidRank(int rank) {
-        return rank >= 0 && rank < 13;
-    }
-
-    public boolean isValidRankAndSuit(int rank, int suit) {
-        return isValidRank(rank) && isValidSuit(suit);
+    public boolean isOneRankHigher(Card card) {
+        return rank.getNumeric() == card.rank.getNumeric() + 1;
     }
 
     public boolean isHigher(Card card) {
-        return rank > card.rank;
+        return rank.getNumeric() > card.rank.getNumeric();
     }
-    
+
     @Override
-    public String toString(){
-        return "" + RANKS[rank] + " " + SUITS[suit];
+    public String toString() {
+        return "" + rank + " " + suit;
     }
-    
+
     @Override
     public int compareTo(Card other) {
-        int res = rank - other.rank;
-        
-        if(res == 0){
-            return suit - other.suit;
+        if (other == null) {
+            return 1;
         }
         
+        int res = rank.getNumeric() - other.rank.getNumeric();
+
+        if (res == 0) {
+            return suit.getNumeric() - other.suit.getNumeric();
+        }
+
         return res;
     }
-    
-    public static void main(String args[]){
-        Card c1 = new Card(7, 0);
-        Card c2 = new Card(7, 1);
-        Card c3 = new Card(6, 3);
-        
+
+    public static void main(String args[]) {
+        Card c1 = new Card(Rank.SEVEN, Suit.CLUBS);
+        Card c2 = new Card(Rank.SEVEN, Suit.DIAMONDS);
+        Card c3 = new Card(Rank.SIX, Suit.HEARTS);
+
         System.out.println("c1.equals(c2)? " + c1.equals(c2));
         System.out.println(c1.compareTo(c2));
         System.out.println(c1.compareTo(c3));
     }
 }
+

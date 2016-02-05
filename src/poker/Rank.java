@@ -10,6 +10,7 @@ package poker;
  * @author ricky
  */
 public enum Rank {
+
     ACE(15),
     KING(14),
     QUEEN(12),
@@ -23,10 +24,18 @@ public enum Rank {
     FOUR(4),
     THREE(3),
     TWO(2);
+
+    private final int numeric;
+
+    Rank(int value) {
+        this.numeric = value;
+    }
+
+    int getNumeric() {
+        return numeric;
+    }
     
-    int value;
-    
-    Rank(int value){
-        this.value = value;
+    public static Rank random(){
+        return Rank.values()[(int)(Rank.values().length * Math.random())];
     }
 }

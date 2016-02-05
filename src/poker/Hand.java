@@ -13,14 +13,13 @@ import java.util.ArrayList;
  */
 public class Hand {
 
-    //static private final int NUMBER_OF_CARDS = 5;
     static private final DecreasingSense COMPARATOR = new DecreasingSense();
     private final ArrayList<Card> cards;
 
     public Hand() {
         cards = new ArrayList<>();
     }
-    
+
     public boolean addCard(Card card) {
         if (!cards.contains(card)) {
             cards.add(card);
@@ -31,15 +30,15 @@ public class Hand {
 
         return false;
     }
-    
-    public Card getCard(int index){
+
+    public Card getCard(int index) {
         return cards.get(index);
     }
-    
-    public int size(){
+
+    public int size() {
         return cards.size();
     }
-    
+
     public void sortCards() {
         cards.sort(COMPARATOR);
     }
@@ -78,11 +77,11 @@ public class Hand {
                 && cards.get(1).isOneRankHigher(cards.get(2))
                 && cards.get(2).isOneRankHigher(cards.get(3))
                 && cards.get(3).isOneRankHigher(cards.get(4)))
-                || (cards.get(0).getRank() == 12
-                && cards.get(1).getRank() == 3
-                && cards.get(2).getRank() == 2
-                && cards.get(3).getRank() == 1
-                && cards.get(4).getRank() == 0);
+                || (cards.get(0).getRank().equals(Rank.ACE)
+                && cards.get(1).getRank().equals(Rank.FIVE)
+                && cards.get(2).getRank().equals(Rank.FOUR)
+                && cards.get(3).getRank().equals(Rank.THREE)
+                && cards.get(4).getRank().equals(Rank.TWO));
     }
 
     private boolean isThreeOfAKind() {
@@ -122,7 +121,7 @@ public class Hand {
         }
 
         if (isStraightFlush()) {
-            if (cards.get(0).getRank() != 12) {
+            if (cards.get(0).getRank().equals(Rank.ACE)) {
                 return new Evaluation(
                         HandType.ROYAL_FLUSH,
                         computeStraightFlushValue());
@@ -173,20 +172,22 @@ public class Hand {
     }
 
     private int computeStraightFlushValue() {
-        return cards.get(0).getRank();
+        return cards.get(0).getRank().getNumeric();
     }
 
     private int computeFourOfAKindValue() {
         if (cards.get(0).hasEqualRank(cards.get(1))
                 && cards.get(0).hasEqualRank(cards.get(2))
                 && cards.get(0).hasEqualRank(cards.get(3))) {
-            return cards.get(0).getRank() * 16 + cards.get(4).getRank();
+            return cards.get(0).getRank().getNumeric() * 16
+                    + cards.get(4).getRank().getNumeric();
         }
 
         if (cards.get(1).hasEqualRank(cards.get(2))
                 && cards.get(1).hasEqualRank(cards.get(3))
                 && cards.get(1).hasEqualRank(cards.get(4))) {
-            return cards.get(1).getRank() * 16 + cards.get(0).getRank();
+            return cards.get(1).getRank().getNumeric() * 16
+                    + cards.get(0).getRank().getNumeric();
         }
 
         return -1;
@@ -196,47 +197,53 @@ public class Hand {
         if (cards.get(0).hasEqualRank(cards.get(1))
                 && cards.get(1).hasEqualRank(cards.get(2))
                 && cards.get(3).hasEqualRank(cards.get(4))) {
-            return cards.get(0).getRank() * 16 + cards.get(3).getRank();
+            return cards.get(0).getRank().getNumeric() * 16
+                    + cards.get(3).getRank().getNumeric();
         }
 
         if (cards.get(0).hasEqualRank(cards.get(1))
                 && cards.get(2).hasEqualRank(cards.get(3))
                 && cards.get(3).hasEqualRank(cards.get(4))) {
-            return cards.get(2).getRank() * 16 + cards.get(0).getRank();
+            return cards.get(2).getRank().getNumeric() * 16
+                    + cards.get(0).getRank().getNumeric();
         }
 
         return -1;
     }
 
     private int computeFlushValue() {
-        return cards.get(0).getRank();
+        return cards.get(0).getRank().getNumeric();
     }
 
     private int computeStraightValue() {
-        if (cards.get(0).getRank() != 12 || cards.get(1).getRank() != 3) {
-            return cards.get(0).getRank();
+        if (!cards.get(0).getRank().equals(Rank.ACE) || 
+                !cards.get(1).getRank().equals(Rank.FIVE)) {
+            return cards.get(0).getRank().getNumeric();
         }
 
-        return 3;
+        return Rank.FIVE.getNumeric();
     }
 
     private int computeThreeOfAKindValue() {
         if (cards.get(0).hasEqualRank(cards.get(1))
                 && cards.get(1).hasEqualRank(cards.get(2))) {
-            return cards.get(0).getRank() * 256 + cards.get(3).getRank() * 16
-                    + cards.get(4).getRank();
+            return cards.get(0).getRank().getNumeric() * 256 + 
+                    cards.get(3).getRank().getNumeric() * 16
+                    + cards.get(4).getRank().getNumeric();
         }
 
         if (cards.get(1).hasEqualRank(cards.get(2))
                 && cards.get(2).hasEqualRank(cards.get(3))) {
-            return cards.get(1).getRank() * 256 + cards.get(0).getRank() * 16
-                    + cards.get(4).getRank();
+            return cards.get(1).getRank().getNumeric() * 256 + 
+                    cards.get(0).getRank().getNumeric() * 16
+                    + cards.get(4).getRank().getNumeric();
         }
 
         if (cards.get(2).hasEqualRank(cards.get(3))
                 && cards.get(3).hasEqualRank(cards.get(4))) {
-            return cards.get(2).getRank() * 256 + cards.get(0).getRank() * 16
-                    + cards.get(1).getRank();
+            return cards.get(2).getRank().getNumeric() * 256 + 
+                    cards.get(0).getRank().getNumeric() * 16
+                    + cards.get(1).getRank().getNumeric();
         }
 
         return -1;
@@ -245,20 +252,23 @@ public class Hand {
     private int computeTwoPairsValue() {
         if (cards.get(0).hasEqualRank(cards.get(1))
                 && cards.get(2).hasEqualRank(cards.get(3))) {
-            return cards.get(0).getRank() * 256 + cards.get(2).getRank() * 16
-                    + cards.get(4).getRank();
+            return cards.get(0).getRank().getNumeric() * 256 + 
+                    cards.get(2).getRank().getNumeric() * 16
+                    + cards.get(4).getRank().getNumeric();
         }
 
         if (cards.get(0).hasEqualRank(cards.get(1))
                 && cards.get(3).hasEqualRank(cards.get(4))) {
-            return cards.get(0).getRank() * 256 + cards.get(3).getRank() * 16
-                    + cards.get(2).getRank();
+            return cards.get(0).getRank().getNumeric() * 256 + 
+                    cards.get(3).getRank().getNumeric() * 16
+                    + cards.get(2).getRank().getNumeric();
         }
 
         if (cards.get(1).hasEqualRank(cards.get(2))
                 && cards.get(3).hasEqualRank(cards.get(4))) {
-            return cards.get(1).getRank() * 256 + cards.get(3).getRank() * 16
-                    + cards.get(0).getRank();
+            return cards.get(1).getRank().getNumeric() * 256 + 
+                    cards.get(3).getRank().getNumeric() * 16
+                    + cards.get(0).getRank().getNumeric();
         }
 
         return -1;
@@ -266,73 +276,118 @@ public class Hand {
 
     private int computeOnePairValue() {
         if (cards.get(0).hasEqualRank(cards.get(1))) {
-            return cards.get(0).getRank() * 4096 + cards.get(2).getRank() * 256
-                    + cards.get(3).getRank() * 16 + cards.get(4).getRank();
+            return cards.get(0).getRank().getNumeric() * 4096 
+                    + cards.get(2).getRank().getNumeric() * 256
+                    + cards.get(3).getRank().getNumeric() * 16 
+                    + cards.get(4).getRank().getNumeric();
         }
 
         if (cards.get(1).hasEqualRank(cards.get(2))) {
-            return cards.get(1).getRank() * 4096 + cards.get(0).getRank() * 256
-                    + cards.get(3).getRank() * 16 + cards.get(4).getRank();
+            return cards.get(1).getRank().getNumeric() * 4096 
+                    + cards.get(0).getRank().getNumeric() * 256
+                    + cards.get(3).getRank().getNumeric() * 16 
+                    + cards.get(4).getRank().getNumeric();
         }
 
         if (cards.get(2).hasEqualRank(cards.get(3))) {
-            return cards.get(2).getRank() * 4096 + cards.get(0).getRank() * 256
-                    + cards.get(1).getRank() * 16 + cards.get(4).getRank();
+            return cards.get(2).getRank().getNumeric() * 4096 
+                    + cards.get(0).getRank().getNumeric() * 256
+                    + cards.get(1).getRank().getNumeric() * 16 
+                    + cards.get(4).getRank().getNumeric();
         }
 
         if (cards.get(3).hasEqualRank(cards.get(4))) {
-            return cards.get(3).getRank() * 4096 + cards.get(0).getRank() * 256
-                    + cards.get(1).getRank() * 16 + cards.get(2).getRank();
+            return cards.get(3).getRank().getNumeric() * 4096 
+                    + cards.get(0).getRank().getNumeric() * 256
+                    + cards.get(1).getRank().getNumeric() * 16 
+                    + cards.get(2).getRank().getNumeric();
         }
 
         return -1;
     }
 
     private int computeHighCardValue() {
-        return cards.get(0).getRank() * 65536 + cards.get(1).getRank() * 4096
-                + cards.get(2).getRank() * 256 + cards.get(3).getRank() * 16
-                + cards.get(4).getRank();
+        return cards.get(0).getRank().getNumeric() * 65536 
+                + cards.get(1).getRank().getNumeric() * 4096
+                + cards.get(2).getRank().getNumeric() * 256 
+                + cards.get(3).getRank().getNumeric() * 16
+                + cards.get(4).getRank().getNumeric();
     }
 
-    public Hand bestHandFrom7Cards() {
-        if (cards.size() == 7) {
-            Hand result = null;
-            int maxRank = 0;
-            int maxValue = -1;
-
-            for (int i = 0; i < cards.size(); ++i) {
-                Card c1 = cards.remove(i);
-
-                for (int j = i; j < cards.size(); ++j) {
-                    Card c2 = cards.remove(j);
-                    Hand tmp = new Hand();
-                    tmp.addCard(cards.get(0));
-                    tmp.addCard(cards.get(1));
-                    tmp.addCard(cards.get(2));
-                    tmp.addCard(cards.get(3));
-                    tmp.addCard(cards.get(4));
-                    Evaluation eval = tmp.computeTypeAndValue();
-
-                    if (eval.getRank() > maxRank) {
-                        maxRank = eval.getRank();
-                        maxValue = eval.getValue();
-                        result = tmp;
-                    } else if (eval.getRank() == maxRank
-                            && eval.getValue() > maxValue) {
-                        maxValue = eval.getValue();
-                        result = tmp;
-                    }
-
-                    cards.add(j, c2);
-                }
-
-                cards.add(i, c1);
-            }
-
-            return result;
+    public static Hand bestHandFrom7Cards(Hand hnd) {
+        if (hnd.cards.size() != 7) {
+            return null;
         }
 
-        return null;
+        Hand result = null;
+        int maxRank = 0;
+        int maxValue = -1;
+
+        for (int i = 0; i < hnd.cards.size(); ++i) {
+            Card c1 = hnd.cards.remove(i);
+
+            for (int j = i; j < hnd.size(); ++j) {
+                Card c2 = hnd.cards.remove(j);
+                Hand tmp = new Hand();
+                tmp.addCard(hnd.cards.get(0));
+                tmp.addCard(hnd.cards.get(1));
+                tmp.addCard(hnd.cards.get(2));
+                tmp.addCard(hnd.cards.get(3));
+                tmp.addCard(hnd.cards.get(4));
+                Evaluation eval = tmp.computeTypeAndValue();
+
+                if (eval.getRank() > maxRank) {
+                    maxRank = eval.getRank();
+                    maxValue = eval.getValue();
+                    result = tmp;
+                } else if (eval.getRank() == maxRank
+                        && eval.getValue() > maxValue) {
+                    maxValue = eval.getValue();
+                    result = tmp;
+                }
+
+                hnd.cards.add(j, c2);
+            }
+
+            hnd.cards.add(i, c1);
+        }
+
+        return result;
+    }
+
+    public static Hand bestHandFrom6Cards(Hand hnd) {
+        if (hnd.cards.size() != 6) {
+            return null;
+        }
+
+        Hand result = null;
+        int maxRank = 0;
+        int maxValue = -1;
+
+        for (int i = 0; i < hnd.size(); ++i) {
+            Card c2 = hnd.cards.remove(i);
+            Hand tmp = new Hand();
+            tmp.addCard(hnd.cards.get(0));
+            tmp.addCard(hnd.cards.get(1));
+            tmp.addCard(hnd.cards.get(2));
+            tmp.addCard(hnd.cards.get(3));
+            tmp.addCard(hnd.cards.get(4));
+            Evaluation eval = tmp.computeTypeAndValue();
+
+            if (eval.getRank() > maxRank) {
+                maxRank = eval.getRank();
+                maxValue = eval.getValue();
+                result = tmp;
+            } else if (eval.getRank() == maxRank
+                    && eval.getValue() > maxValue) {
+                maxValue = eval.getValue();
+                result = tmp;
+            }
+
+            hnd.cards.add(i, c2);
+        }
+
+        return result;
     }
 
     @Override
@@ -345,18 +400,17 @@ public class Hand {
             Hand hand = new Hand();
 
             for (int i = 0; i < 7; ++i) {
-                while(!hand.addCard(Card.random())){
-                    
+                while (!hand.addCard(Card.random())) {
                 }
             }
 
             System.out.println("hand = " + hand);
             System.out.println("hand.computeTypeAndValue() = "
                     + hand.computeTypeAndValue());
-            Hand bestHand = hand.bestHandFrom7Cards();
+            Hand bestHand = Hand.bestHandFrom7Cards(hand);
             System.out.println("best hand = " + bestHand);
-            System.out.println("best hand type and value = " + 
-                    bestHand.computeTypeAndValue());
+            System.out.println("best hand type and value = "
+                    + bestHand.computeTypeAndValue());
             System.out.println("hand = " + hand + "\n\n");
         }
     }

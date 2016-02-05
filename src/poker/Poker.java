@@ -18,6 +18,7 @@ public class Poker {
     private final int MAX_NUMBER_OF_PLAYERS = 10;
     private final int MINIMAL_STARTING_CHIPS_PER_PLAYER = 1000;
     private final CardDeck cards;
+    private final Stack<Card> board;
     private final Stack<Card> muck;
     private final CircularList<Player> players;
     private Player buttonPlayer;
@@ -30,9 +31,10 @@ public class Poker {
     private Integer highestBet;
 
     public Poker() {
-        muck = new Stack();
-        cards = new CardDeck();
         players = createPlayers();
+        cards = CardDeck.createFiftyTwoCardsDeck();
+        board = new Stack<>();
+        muck = new Stack<>();
     }
 
     private void game() {
@@ -49,7 +51,54 @@ public class Poker {
         preFlop();
         pot = collectAllBets();
         output("POT = " + pot);
+        closeBettingRound();
+        output(this.toString());
+
+        burnOneCard();
+        flop();
+        addCommunityCardsToPlayersHand();
+        output(this.toString());
+    }
+
+    private void closeBettingRound() {
         decrementAllPlayersChips();
+        resetAllPlayersBet();
+        highestBet = 0;
+        smallBlindPlayer = null;
+        bigBlindPlayer = null;
+        whoRaised = null;
+    }
+
+    private void burnOneCard() {
+        muck.add(cards.pop());
+    }
+
+    private void flop() {
+        for (int i = 0; i < 3; ++i) {
+            board.add(cards.pop());
+        }
+    }
+
+    private void addCommunityCardsToPlayersHand() {
+
+        for (int i = 0; i < 3; ++i) {
+            CircularListIterator<Player> it
+                    = listIteratorToPlayer(buttonPlayer);
+            Player firstPlayer = it.next();
+            Player currentPlayer = firstPlayer;
+
+            while (true) {
+                if (currentPlayer.isActive()) {
+                    currentPlayer.addCommunity(board.get(i));
+                }
+
+                currentPlayer = it.next();
+
+                if (currentPlayer == firstPlayer) {
+                    break;
+                }
+            }
+        }
     }
 
     private void setBigBlind() {
@@ -217,6 +266,22 @@ public class Poker {
         }
     }
 
+    private void resetAllPlayersBet() {
+        CircularListIterator<Player> it = listIteratorToPlayer(buttonPlayer);
+        Player currentPlayer = it.next();
+        currentPlayer.setCurrentBet(0);
+
+        while (true) {
+            currentPlayer = it.next();
+
+            if (currentPlayer == buttonPlayer) {
+                return;
+            }
+
+            currentPlayer.setCurrentBet(0);
+        }
+    }
+
     private CircularListIterator<Player> listIteratorToUnderTheGun() {
         CircularListIterator<Player> it = listIteratorToPlayer(bigBlindPlayer);
 
@@ -363,20 +428,65 @@ public class Poker {
         String res = "Poker{" + "\nMAX_NUMBER_OF_PLAYERS="
                 + MAX_NUMBER_OF_PLAYERS;
         res += ",\ncards=" + cards.toString();
+        res += ",\nboard=" + board;
+        res += ",\nmuck=" + muck;
         res += ",\nplayers=[";
 
         for (int i = 0; i < players.size(); ++i) {
             res += "\n" + i + ":" + players.get(i);
         }
 
-        res += "],\nbuttonPlayer=" + buttonPlayer;
-        res += "],\nsmallBlindPlayer=" + smallBlindPlayer;
-        res += "],\nbigBlindPlayer=" + bigBlindPlayer;
+        res += "],\nbuttonPlayer=";
+
+        if (buttonPlayer != null) {
+            res += buttonPlayer.getName();
+        } else {
+            res += "no one";
+        }
+
+        res += ",\nsmallBlindPlayer=";
+
+        if (smallBlindPlayer != null) {
+            res += smallBlindPlayer.getName();
+        } else {
+            res += "no one";
+        }
+
+        res += ",\nbigBlindPlayer=";
+
+        if (bigBlindPlayer != null) {
+            res += bigBlindPlayer.getName();
+        } else {
+            res += "no one";
+        }
+
         res += "}";
 
         return res;
     }
 
+    /*@Override
+     public String toString() {
+     return "Poker{" + "MAX_NUMBER_OF_PLAYERS=" + MAX_NUMBER_OF_PLAYERS
+     + ", MINIMAL_STARTING_CHIPS_PER_PLAYER="
+     + MINIMAL_STARTING_CHIPS_PER_PLAYER
+     + ", cards=" + cards
+     + ", board=" + board
+     + ", muck=" + muck
+     + ", players=" + players
+     + ", buttonPlayer="
+     + buttonPlayer != null? buttonPlayer.getName(): "no one"
+     + ", smallBlindPlayer=" 
+     + smallBlindPlayer != null? smallBlindPlayer.getName(): "no one"
+     + ", bigBlindPlayer=" 
+     + bigBlindPlayer != null? bigBlindPlayer.getName(): "no one"
+     + ", whoRaised=" 
+     + whoRaised != null? whoRaised.getName(): "no one"
+     + ", smallBlind=" + smallBlind
+     + ", bigBlind=" + bigBlind
+     + ", pot=" + pot
+     + ", highestBet=" + highestBet + '}';
+     }*/
     private Card removeTopCard() {
         return cards.pop();
     }
@@ -388,5 +498,6 @@ public class Poker {
     public static void main(String args[]) {
         Poker poker = new Poker();
         poker.game();
+        //Poker.output(poker.toString());
     }
 }
