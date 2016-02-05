@@ -58,6 +58,84 @@ public class Poker {
         flop();
         addCommunityCardsToPlayersHand();
         output(this.toString());
+        bettingRound();
+    }
+
+    private void bettingRound() {
+        Player firstToPlay = firstActivePlayerAfter(buttonPlayer);
+        
+        if(firstToPlay == null || firstToPlay.equals(buttonPlayer)){
+            throw new UnsupportedOperationException();
+        }
+        
+        CircularListIterator<Player> it = listIteratorToPlayer(firstToPlay);
+        Player currentPlayer = it.next();
+        Decision decision = getDecision2(currentPlayer);
+        apply(decision, currentPlayer);
+        boolean allChecked = decision.getAction() == Action.CHECK;
+        
+
+        while (true) {
+            currentPlayer = it.next();
+
+            if (currentPlayer.isActive()) {
+                decision = getDecision2(currentPlayer);
+
+                apply(decision, currentPlayer);
+                
+                if(decision.getAction() == Action.RAISE){
+                    allChecked = false;
+                }
+                else{
+                    if( currentPlayer.equals(firstToPlay) && 
+                        decision.getAction() == Action.CHECK &&
+                        allChecked)
+                    {
+                        break;
+                    }
+                }
+
+                if (actionEndedBettingRound(
+                        decision.getAction(), 
+                        currentPlayer)) {
+                    break;
+                }
+            }
+        }
+    }
+
+    private Decision getDecision2(Player currentPlayer) {
+        Decision decision;
+
+        while (true) {
+            decision = currentPlayer.act(bigBlind, highestBet);
+
+            if (isValidAction2(decision.getAction(), currentPlayer)) {
+                break;
+            }
+        }
+
+        return decision;
+    }
+
+    public boolean isValidAction2(Action action, Player player) {
+        return (action != Action.RAISE || player.canRaise(bigBlind, highestBet))
+                && (action != Action.CHECK || whoRaised == null 
+                    || player == whoRaised)
+                && (action != Action.FOLD || player != whoRaised)
+                && (action != Action.CALL || whoRaised != null 
+                    || player != whoRaised);
+    }
+    
+    private boolean actionEndedBettingRound(Action action, Player currentPlayer) {
+        if ((action == Action.CHECK) && (currentPlayer == whoRaised)) {
+            return true;
+        } else {
+            if ((action == Action.FOLD) && (countActivePlayer() == 1)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void closeBettingRound() {
@@ -111,21 +189,21 @@ public class Poker {
 
     /*
      * returns the first active player after "player" 
-     * or null if no active player has been found after "player"  
+     * or null if no active player has been found after circling all players 
      */
     public Player firstActivePlayerAfter(Player player) {
         CircularListIterator<Player> it = listIteratorToPlayer(player);
-        Player currentPlayer = it.next();
+        it.next();
 
         while (true) {
-            currentPlayer = it.next();
-
-            if (currentPlayer == player) {
-                return null;
-            }
+            Player currentPlayer = it.next();
 
             if (currentPlayer.isActive()) {
                 return currentPlayer;
+            }
+
+            if (currentPlayer == player) {
+                return null;
             }
         }
     }
@@ -170,7 +248,7 @@ public class Poker {
 
                 apply(decision, currentPlayer);
 
-                if (actionEndedRound(decision.getAction(), currentPlayer)) {
+                if (actionEndedPreFlop(decision.getAction(), currentPlayer)) {
                     break;
                 }
 
@@ -219,7 +297,7 @@ public class Poker {
         whoRaised = currentPlayer;
     }
 
-    private boolean actionEndedRound(Action action, Player currentPlayer) {
+    private boolean actionEndedPreFlop(Action action, Player currentPlayer) {
         if ((action == Action.CHECK) && (currentPlayer == whoRaised)) {
             return true;
         } else {

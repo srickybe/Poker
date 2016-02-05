@@ -5,7 +5,6 @@
  */
 package poker;
 
-import java.util.ArrayList;
 import java.util.Scanner;
 
 /**
@@ -30,12 +29,11 @@ public class Player {
             + "2, TO " + ACTIONS[2].toString() + "\n"
             + "3, TO " + ACTIONS[3].toString() + "\n"
             + "4, TO " + ACTIONS[4].toString() + "\n";
-    
-    private final DecreasingSense CARD_COMPARATOR = new DecreasingSense();
 
     private final String name;
     private final Hand hole;
     private final Hand hand;
+    //private final Action latestAction;
     private Integer chips;
     private int currentBet;
     private boolean hasFolded;
@@ -50,6 +48,7 @@ public class Player {
         this.name = name;
         hole = new Hand();
         hand = new Hand();
+        //latestAction = null;
         this.chips = chips;
         currentBet = 0;
         hasFolded = false;
@@ -135,7 +134,7 @@ public class Player {
                 addToHand(card);
             }
             else{
-                //throw an exception here!
+                throw new UnsupportedOperationException();
             }
         }
     }
