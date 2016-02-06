@@ -31,6 +31,7 @@ public class Player {
             + "4, TO " + ACTIONS[4].toString() + "\n";
 
     private final String name;
+    private Action latestAction;
     private final Hand hole;
     private final Hand hand;
     //private final Action latestAction;
@@ -48,7 +49,7 @@ public class Player {
         this.name = name;
         hole = new Hand();
         hand = new Hand();
-        //latestAction = null;
+        latestAction = null;
         this.chips = chips;
         currentBet = 0;
         hasFolded = false;
@@ -66,6 +67,10 @@ public class Player {
         return currentBet;
     }
 
+    public Action getLatestAction() {
+        return latestAction;
+    }
+
     public String getName() {
         return name;
     }
@@ -73,7 +78,10 @@ public class Player {
     public boolean hasFolded() {
         return hasFolded;
     }
-
+    
+    public void setLatestAction(Action latestAction) {
+        this.latestAction = latestAction;
+    }
     public void setCurrentBet(int currentBet) {
         this.currentBet = currentBet;
         output(name + "\tcurrent bet = " + currentBet);
@@ -128,17 +136,16 @@ public class Player {
         addToHand(card);
     }
 
-    public void addToHole(Card card){
-        if(hole.size() < 2){
-            if(hole.addCard(card)){
+    public void addToHole(Card card) {
+        if (hole.size() < 2) {
+            if (hole.addCard(card)) {
                 addToHand(card);
-            }
-            else{
+            } else {
                 throw new UnsupportedOperationException();
             }
         }
     }
-    
+
     public int betSmallBlind() {
         String message = this.getName() + ", bet the small blind, please:\n";
         Integer bet;
@@ -203,42 +210,42 @@ public class Player {
 
     @Override
     public String toString() {
-        return "Player{" + "name=" + name + ", hole=" + hole + 
-                ", cards=" + hand + ", chips=" + chips + 
-                ", currentBet=" + currentBet + ", hasFolded=" + hasFolded + '}';
+        return "Player{" + "name=" + name + ", hole=" + hole
+                + ", cards=" + hand + ", chips=" + chips
+                + ", currentBet=" + currentBet + ", hasFolded=" + hasFolded + '}';
     }
 
     public static void main(String args[]) {
         /*ArrayList<Card> cards = new ArrayList<>();
 
-        for (int i = 0; i < 10; ++i) {
-            Card card = Card.random();
-            System.out.println("card = " + card);
+         for (int i = 0; i < 10; ++i) {
+         Card card = Card.random();
+         System.out.println("card = " + card);
 
-            while (cards.contains(card)) {
-                card = Card.random();
-            }
+         while (cards.contains(card)) {
+         card = Card.random();
+         }
 
-            cards.add(card);
-        }
+         cards.add(card);
+         }
 
-        cards.sort(new DecreasingSense());
+         cards.sort(new DecreasingSense());
 
-        for (int i = 0; i < 10; ++i) {
-            System.out.println("card" + i + cards.get(i));
-        }*/
-        
+         for (int i = 0; i < 10; ++i) {
+         System.out.println("card" + i + cards.get(i));
+         }*/
+
         Player gery = new Player("Gery", 500);
-        
-        for(int i = 0; i < 5; ++i){
+
+        for (int i = 0; i < 5; ++i) {
             Card card = Card.random();
             gery.addToHole(card);
             System.out.println("card" + i + " = " + card);
         }
-        
+
         System.out.println("gery = " + gery);
-        
-        for(int i = 0; i < 10; ++i){
+
+        for (int i = 0; i < 10; ++i) {
             Card card = Card.random();
             gery.addCommunity(card);
             System.out.println("gery = " + gery);

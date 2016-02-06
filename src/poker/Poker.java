@@ -16,101 +16,204 @@ import java.util.Stack;
 public class Poker {
 
     private final int MAX_NUMBER_OF_PLAYERS = 10;
-    private final int MINIMAL_STARTING_CHIPS_PER_PLAYER = 1000;
+    private final ArrayList<Player> players;
     private final CardDeck cards;
     private final Stack<Card> board;
-    private final Stack<Card> muck;
-    private final CircularList<Player> players;
-    private Player buttonPlayer;
-    private Player smallBlindPlayer;
-    private Player bigBlindPlayer;
+    private final CardDeck muck;
+    private int buttonIndex;
+    private int smallBlindIndex;
+    private int bigBlindIndex;
     private Player whoRaised;
+    private int pot;
     private int smallBlind;
     private int bigBlind;
-    private Integer pot;
-    private Integer highestBet;
+    private int highestBet;
 
     public Poker() {
         players = createPlayers();
-        cards = CardDeck.createFiftyTwoCardsDeck();
+        cards = CardDeck.createFiftyTwoCardDeck();
         board = new Stack<>();
-        muck = new Stack<>();
+        muck = CardDeck.createEmptyCardDeck();
+        pot = 0;
     }
 
-    private void game() {
-        cards.shuffle();
-        setPlayersRole();
+    @Override
+    public String toString() {
+        return "Poker{" + "MAX_NUMBER_OF_PLAYERS=" + MAX_NUMBER_OF_PLAYERS
+                + ", \nplayers=" + players
+                + ", \ncards=" + cards
+                + ", \nboard=" + board
+                + ", \nmuck=" + muck
+                + ", \nbuttonIndex=" + buttonIndex
+                + ", \nsmallBlindIndex=" + smallBlindIndex
+                + ", \nbigBlindIndex=" + bigBlindIndex
+                + ", \nwhoRaised=" + whoRaised
+                + ", \npot=" + pot
+                + ", \nsmallBlind=" + smallBlind
+                + ", \nbigBlind=" + bigBlind
+                + ", \nhighestBet=" + highestBet
+                + "\n}";
+    }
+
+    public void start() {
+        shuffleCards();
+        resetPlayersRole();
         setSmallBlind();
-        smallBlindPlayer.setCurrentBet(smallBlind);
         setBigBlind();
-        bigBlindPlayer.setCurrentBet(bigBlind);
-        setWhoRaised(bigBlindPlayer);
-        highestBet = bigBlind;
+        setWhoRaised(players.get(bigBlindIndex));
+        setHighestBet(bigBlind);
         dealOneCardToPlayers();
         dealOneCardToPlayers();
         preFlop();
-        pot = collectAllBets();
-        output("POT = " + pot);
-        closeBettingRound();
         output(this.toString());
-
         burnOneCard();
         flop();
-        addCommunityCardsToPlayersHand();
+        addFlopToPlayersHand();
         output(this.toString());
-        bettingRound();
+        bettingRound2();
+        closeBettingRound();
+        burnOneCard();
+        turn();
+        output("board = " + board);
+        addCardToPlayersHand(board.lastElement());
+        output(this.toString());
+        bettingRound2();
+        closeBettingRound();
     }
 
-    private void bettingRound() {
-        Player firstToPlay = firstActivePlayerAfter(buttonPlayer);
-        
-        if(firstToPlay == null || firstToPlay.equals(buttonPlayer)){
+    private void turn() {
+        board.add(cards.pop());
+    }
+
+    private void bettingRound2() {
+        int index = indexOfFirstActivePlayerAfter(buttonIndex);
+
+        if (index == players.size()) {
             throw new UnsupportedOperationException();
         }
-        
-        CircularListIterator<Player> it = listIteratorToPlayer(firstToPlay);
-        Player currentPlayer = it.next();
-        Decision decision = getDecision2(currentPlayer);
-        apply(decision, currentPlayer);
-        boolean allChecked = decision.getAction() == Action.CHECK;
-        
+
+        Player firstPlayer = players.get(index);
+        Player player = firstPlayer;
+        Decision decision = getDecision2(player);
+        apply(decision, player);
 
         while (true) {
-            currentPlayer = it.next();
+            index = nextIndex(index);
 
-            if (currentPlayer.isActive()) {
-                decision = getDecision2(currentPlayer);
+            player = players.get(index);
 
-                apply(decision, currentPlayer);
-                
-                if(decision.getAction() == Action.RAISE){
-                    allChecked = false;
-                }
-                else{
-                    if( currentPlayer.equals(firstToPlay) && 
-                        decision.getAction() == Action.CHECK &&
-                        allChecked)
-                    {
-                        break;
-                    }
-                }
+            if (player.isActive()) {
+                decision = getDecision2(player);
 
-                if (actionEndedBettingRound(
-                        decision.getAction(), 
-                        currentPlayer)) {
+                apply(decision, player);
+                Action action = decision.getAction();
+
+                if (actionEndedBettingRound2(action, player, firstPlayer)) {
                     break;
                 }
             }
         }
     }
 
-    private Decision getDecision2(Player currentPlayer) {
+    private boolean actionEndedBettingRound2(
+            Action action,
+            Player player,
+            Player firstPlayer) {
+        if ((action == Action.CHECK)
+                && (player == whoRaised
+                || (allCheckedFromTo(firstPlayer, player)
+                && player == firstPlayer))) {
+            return true;
+        }
+
+        return (action == Action.FOLD) && (countActivePlayer() == 1);
+    }
+
+    private boolean allCheckedFromTo(
+            Player firstPlayer,
+            Player lastPlayer) {
+        int first = players.indexOf(firstPlayer);
+        int last = players.indexOf(lastPlayer);
+
+        if (first < last) {
+            return allCheckedFromToAux1(first, last);
+        } else {
+            if (first > last) {
+                return allCheckedFromToAux2(last, first);
+            } else {
+                return allCheckedFromToAux2(last, first);
+            }
+        }
+    }
+
+    private boolean allCheckedFromToAux2(int last, int first) {
+        for (int i = last; i < players.size(); ++i) {
+            Player player = players.get(i);
+
+            if (player.isActive() && player.getLatestAction() != Action.CHECK) {
+                return false;
+            }
+        }
+
+        return allCheckedFromToAux1(0, first);
+    }
+
+    private boolean allCheckedFromToAux1(int first, int last) {
+        for (int i = first; i <= last; ++i) {
+            Player player = players.get(i);
+
+            if (player.isActive() && player.getLatestAction() != Action.CHECK) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private int indexOfFirstActivePlayerAfter(int index) {
+        int pos = players.size();
+
+        if (index >= 0 && index < players.size()) {
+            int start = index + 1;
+
+            if (start < players.size()) {
+                for (pos = start; pos < players.size(); ++pos) {
+                    if (players.get(pos).isActive()) {
+                        return pos;
+                    }
+                }
+
+                for (pos = 0; pos < index; ++pos) {
+                    if (players.get(pos).isActive()) {
+                        return pos;
+                    }
+                }
+
+                return players.size();
+
+            } else {
+                start = 0;
+
+                for (pos = start; pos < players.size(); ++pos) {
+                    if (pos != index && players.get(pos).isActive()) {
+                        return pos;
+                    }
+                }
+
+                return players.size();
+            }
+        }
+
+        return pos;
+    }
+
+    private Decision getDecision2(Player player) {
         Decision decision;
 
         while (true) {
-            decision = currentPlayer.act(bigBlind, highestBet);
+            decision = player.act(bigBlind, highestBet);
 
-            if (isValidAction2(decision.getAction(), currentPlayer)) {
+            if (isValidAction2(decision.getAction(), player)) {
                 break;
             }
         }
@@ -120,35 +223,25 @@ public class Poker {
 
     public boolean isValidAction2(Action action, Player player) {
         return (action != Action.RAISE || player.canRaise(bigBlind, highestBet))
-                && (action != Action.CHECK || whoRaised == null 
-                    || player == whoRaised)
+                && (action != Action.CHECK || whoRaised == null || player == whoRaised)
                 && (action != Action.FOLD || player != whoRaised)
-                && (action != Action.CALL || whoRaised != null 
-                    || player != whoRaised);
+                && (action != Action.CALL || whoRaised != null);
     }
-    
-    private boolean actionEndedBettingRound(Action action, Player currentPlayer) {
-        if ((action == Action.CHECK) && (currentPlayer == whoRaised)) {
-            return true;
-        } else {
-            if ((action == Action.FOLD) && (countActivePlayer() == 1)) {
-                return true;
+
+    private void addFlopToPlayersHand() {
+        for (int i = 0; i < 3; ++i) {
+            addCardToPlayersHand(board.get(i));
+        }
+    }
+
+    private void addCardToPlayersHand(Card card) {
+        for (int j = 0; j < players.size(); ++j) {
+            Player player = players.get(j);
+
+            if (player.isActive()) {
+                player.addCommunity(card);
             }
         }
-        return false;
-    }
-
-    private void closeBettingRound() {
-        decrementAllPlayersChips();
-        resetAllPlayersBet();
-        highestBet = 0;
-        smallBlindPlayer = null;
-        bigBlindPlayer = null;
-        whoRaised = null;
-    }
-
-    private void burnOneCard() {
-        muck.add(cards.pop());
     }
 
     private void flop() {
@@ -157,148 +250,125 @@ public class Poker {
         }
     }
 
-    private void addCommunityCardsToPlayersHand() {
+    private void burnOneCard() {
+        muck.add(cards.pop());
+    }
 
-        for (int i = 0; i < 3; ++i) {
-            CircularListIterator<Player> it
-                    = listIteratorToPlayer(buttonPlayer);
-            Player firstPlayer = it.next();
-            Player currentPlayer = firstPlayer;
+    public void preFlop() {
+        makeAllPlayersBet();
+        //bettingRound2();
+        closeBettingRound();
+    }
 
-            while (true) {
-                if (currentPlayer.isActive()) {
-                    currentPlayer.addCommunity(board.get(i));
-                }
+    private void closeBettingRound() {
+        pot += collectAllBets();
+        decrementAllPlayersChips();
+        resetAllPlayersBet();
+        setHighestBet(0);
+        setSmallBlindIndex(-1);
+        setBigBlindIndex(-1);
+        setWhoRaised(null);
+    }
 
-                currentPlayer = it.next();
+    private void setSmallBlindIndex(int index) {
+        smallBlindIndex = index;
+    }
 
-                if (currentPlayer == firstPlayer) {
-                    break;
-                }
-            }
+    private void setBigBlindIndex(int index) {
+        bigBlindIndex = index;
+    }
+
+    private void resetAllPlayersBet() {
+        for (int i = 0; i < players.size(); ++i) {
+            players.get(i).setCurrentBet(0);
         }
     }
 
-    private void setBigBlind() {
-        bigBlind = bigBlindPlayer.betBigBlind(smallBlind);
-    }
-
-    private void setSmallBlind() {
-        smallBlind = smallBlindPlayer.betSmallBlind();
-    }
-
-    /*
-     * returns the first active player after "player" 
-     * or null if no active player has been found after circling all players 
-     */
-    public Player firstActivePlayerAfter(Player player) {
-        CircularListIterator<Player> it = listIteratorToPlayer(player);
-        it.next();
-
-        while (true) {
-            Player currentPlayer = it.next();
-
-            if (currentPlayer.isActive()) {
-                return currentPlayer;
-            }
-
-            if (currentPlayer == player) {
-                return null;
-            }
+    private void decrementAllPlayersChips() {
+        for (int i = 0; i < players.size(); ++i) {
+            players.get(i).removeBetChips();
         }
     }
 
-    public boolean setSmallBlindPlayer() {
-        Player player = firstActivePlayerAfter(buttonPlayer);
+    private int collectAllBets() {
+        int result = 0;
 
-        if (player != null) {
-            smallBlindPlayer = player;
-            return true;
-        } else {
-            return false;
+        for (int i = 0; i < players.size(); ++i) {
+            result += players.get(i).getCurrentBet();
         }
-    }
 
-    public boolean setBigBlindPlayer() {
-        Player player = firstActivePlayerAfter(smallBlindPlayer);
-
-        if (player != null) {
-            bigBlindPlayer = player;
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public boolean isValidAction(Action action, Player player) {
-        return (action != Action.RAISE || player.canRaise(bigBlind, highestBet))
-                && (action != Action.CHECK || player == whoRaised)
-                && (action != Action.FOLD || player != whoRaised)
-                && (action != Action.CALL || player != whoRaised);
+        return result;
     }
 
     public void makeAllPlayersBet() {
-        CircularListIterator<Player> it = listIteratorToUnderTheGun();
+        int index = indexOfUnderTheGun();
 
         while (true) {
-            Player currentPlayer = it.next();
+            Player player = players.get(index);
 
-            if (currentPlayer.isActive()) {
-                Decision decision = getDecision(currentPlayer);
+            if (player.isActive()) {
+                Decision decision = getDecision(player);
 
-                apply(decision, currentPlayer);
+                apply(decision, player);
 
-                if (actionEndedPreFlop(decision.getAction(), currentPlayer)) {
+                if (actionEndedPreFlop(decision.getAction(), player)) {
                     break;
                 }
-
             }
+
+            index = nextIndex(index);
         }
     }
 
-    private Decision getDecision(Player currentPlayer) {
-        Decision decision;
+    private int nextIndex(int index) {
+        index += 1;
 
-        while (true) {
-            decision = currentPlayer.act(bigBlind, highestBet);
-
-            if (isValidAction(decision.getAction(), currentPlayer)) {
-                break;
-            }
+        if (index == players.size()) {
+            index = 0;
         }
 
-        return decision;
+        return index;
     }
 
-    private void apply(Decision decision, Player currentPlayer) {
+    private int indexOfUnderTheGun() {
+        int index = bigBlindIndex + 1;
+
+        if (index >= players.size()) {
+            index = 0;
+        }
+
+        return index;
+    }
+
+    private void apply(Decision decision, Player player) {
         switch (decision.getAction()) {
             case CALL:
+                player.setCurrentBet(decision.getBet());
+                break;
 
             case CHECK:
-                currentPlayer.setCurrentBet(decision.getBet());
+                player.setCurrentBet(decision.getBet());
                 break;
 
             case RAISE:
-                setWhoRaised(currentPlayer);
+                setWhoRaised(player);
                 highestBet = decision.getBet();
-                currentPlayer.setCurrentBet(highestBet);
+                player.setCurrentBet(highestBet);
                 break;
 
             case FOLD:
-                currentPlayer.fold();
+                player.fold();
                 break;
 
             default:
                 output("CASE." + decision.getAction() + " not treated yet");
         }
+
+        player.setLatestAction(decision.getAction());
     }
 
-    private void setWhoRaised(Player currentPlayer) {
-        whoRaised = currentPlayer;
-    }
-
-    private boolean actionEndedPreFlop(Action action, Player currentPlayer) {
-        if ((action == Action.CHECK) && (currentPlayer == whoRaised)) {
+    private boolean actionEndedPreFlop(Action action, Player player) {
+        if ((action == Action.CHECK) && (player == whoRaised)) {
             return true;
         } else {
             if ((action == Action.FOLD) && (countActivePlayer() == 1)) {
@@ -308,161 +378,139 @@ public class Poker {
         return false;
     }
 
-    private void preFlop() {
-        makeAllPlayersBet();
-    }
-
-    private int collectAllBets() {
-        CircularListIterator<Player> it = listIteratorToPlayer(buttonPlayer);
-        Player currentPlayer = it.next();
-        int result = currentPlayer.getCurrentBet();
-
-        while (true) {
-            currentPlayer = it.next();
-
-            if (currentPlayer == buttonPlayer) {
-                return result;
-            }
-
-            result += currentPlayer.getCurrentBet();
-        }
-    }
-
-    private void decrementAllPlayersChips() {
-        CircularListIterator<Player> it = listIteratorToPlayer(buttonPlayer);
-        Player currentPlayer = it.next();
-        currentPlayer.removeBetChips();
-
-        while (true) {
-            currentPlayer = it.next();
-
-            if (currentPlayer == buttonPlayer) {
-                return;
-            }
-
-            currentPlayer.removeBetChips();
-        }
-    }
-
-    private void resetAllPlayersBet() {
-        CircularListIterator<Player> it = listIteratorToPlayer(buttonPlayer);
-        Player currentPlayer = it.next();
-        currentPlayer.setCurrentBet(0);
-
-        while (true) {
-            currentPlayer = it.next();
-
-            if (currentPlayer == buttonPlayer) {
-                return;
-            }
-
-            currentPlayer.setCurrentBet(0);
-        }
-    }
-
-    private CircularListIterator<Player> listIteratorToUnderTheGun() {
-        CircularListIterator<Player> it = listIteratorToPlayer(bigBlindPlayer);
-
-        if (it != null) {
-            output("it.next().getName() = " + it.next().getName());
-            output("bigBlindPlayer.getName() = " + bigBlindPlayer.getName());
-            return it;
-        }
-
-        return null;
-    }
-
-    private CircularListIterator<Player> listIteratorToPlayer(Player player) {
-        return players.listIterator(players.indexOf(player));
-    }
-
     private int countActivePlayer() {
+        int count = 0;
 
-        if (players.isEmpty()) {
-            return 0;
-        }
-
-        CircularListIterator<Player> it = players.listIterator();
-        Player firstPlayer = it.next();
-        int count = firstPlayer.isActive() ? 1 : 0;
-
-        while (true) {
-            Player currentPlayer = it.next();
-
-            if (currentPlayer == firstPlayer) {
-                return count;
-            }
-
-            if (currentPlayer.isActive()) {
+        for (Player player : players) {
+            if (player.isActive()) {
                 ++count;
             }
         }
+
+        return count;
     }
 
-    /**
-     * deal a card to all the players starting form the small blind
-     */
-    public void dealOneCardToPlayers() {
-        CircularListIterator<Player> it
-                = listIteratorToPlayer(smallBlindPlayer);
-        Player currentPlayer = it.next();
+    private Decision getDecision(Player player) {
+        Decision decision;
 
         while (true) {
-            currentPlayer.addToHole(removeTopCard());
-            output("currentPlayer = " + currentPlayer.toString());
-            currentPlayer = it.next();
+            decision = player.act(bigBlind, highestBet);
 
-            if (currentPlayer == smallBlindPlayer) {
+            if (isValidAction(decision.getAction(), player)) {
                 break;
             }
         }
+
+        return decision;
     }
 
-    private void setPlayersRole() {
-        if (players.size() > 2) {
-            CircularListIterator<Player> it = players.listIterator();
-            buttonPlayer = it.next();
-            smallBlindPlayer = it.next();
-            bigBlindPlayer = it.next();
-        } else if (players.size() == 2) {
-            CircularListIterator<Player> it = players.listIterator();
-            buttonPlayer = it.next();
-            smallBlindPlayer = buttonPlayer;
-            bigBlindPlayer = it.next();
-        } else if (players.size() == 1) {
+    public boolean isValidAction(Action action, Player player) {
+
+        return (action != Action.RAISE || player.canRaise(bigBlind, highestBet))
+                && (action != Action.CHECK || player == whoRaised)
+                && (action != Action.FOLD || player != whoRaised)
+                && (action != Action.CALL || player != whoRaised);
+    }
+
+    public void dealOneCardToPlayers() {
+        for (int i = smallBlindIndex; i < players.size(); ++i) {
+            players.get(i).addToHole(cards.pop());
+            System.out.println("current player = " + players.get(i));
+        }
+
+        if (smallBlindIndex > 0) {
+            for (int i = 0; i < smallBlindIndex; ++i) {
+                players.get(i).addToHole(cards.pop());
+                System.out.println("current player = " + players.get(i));
+            }
         }
     }
 
-    private CircularList<Player> createPlayers() {
-        int nPlayers = promptNumberOfPlayers();
-        ArrayList<String> names = promptPlayersName(nPlayers);
-
-        return createPlayersFromNames(names);
+    private void setHighestBet(int bet) {
+        highestBet = bet;
     }
 
-    private ArrayList<String> promptPlayersName(int nPlayers) {
-        ArrayList<String> names = new ArrayList<>();
+    private void setWhoRaised(Player player) {
+        whoRaised = player;
+    }
+
+    private void setBigBlind() {
+        Player player = players.get(bigBlindIndex);
+        bigBlind = player.betBigBlind(smallBlind);
+        player.setCurrentBet(bigBlind);
+        setWhoRaised(player);
+    }
+
+    private void setSmallBlind() {
+        Player player = players.get(smallBlindIndex);
+        smallBlind = player.betSmallBlind();
+        player.setCurrentBet(smallBlind);
+    }
+
+    private void shuffleCards() {
+        cards.shuffle();
+    }
+
+    private void resetPlayersRole() {
+        if (players.size() > 2) {
+            buttonIndex = 0;
+            smallBlindIndex = buttonIndex + 1;
+            bigBlindIndex = smallBlindIndex + 1;
+        } else if (players.size() == 2) {
+            buttonIndex = 0;
+            smallBlindIndex = buttonIndex;
+            bigBlindIndex = smallBlindIndex + 1;
+        } else if (players.size() == 1) {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    private ArrayList<Player> createPlayers() {
+        int nPlayers = inputNumberOfPlayers();
+        ArrayList<Player> result = new ArrayList<>();
 
         for (int i = 0; i < nPlayers; ++i) {
-            String name = promptPlayerName();
-
-            while (names.contains(name)) {
-                output("There's already a player named " + name);
-                name = promptPlayerName();
-            }
-
-            names.add(name);
+            result.add(createPlayer());
         }
 
-        return names;
+        return result;
     }
 
-    private int promptNumberOfPlayers() {
+    private Player createPlayer() {
+        String name = this.inputPlayerName();
+        output("Enter the number of Chips for " + name);
+        int chips = this.inputPlayerChips();
+
+        return new Player(name, chips);
+    }
+
+    private int inputPlayerChips() {
+        return this.getIntInput();
+    }
+
+    private String inputPlayerName() {
+        String name = "";
+
+        while ("".equals(name)) {
+            output("Enter a name");
+            Scanner input = new Scanner(System.in);
+
+            try {
+                name = input.next();
+            } catch (Exception e) {
+                name = "";
+            }
+        }
+
+        return name;
+    }
+
+    private int inputNumberOfPlayers() {
         output("Enter the number of players");
         Integer nPlayers = getIntInput();
 
-        while (nPlayers == null || nPlayers > MAX_NUMBER_OF_PLAYERS) {
-            output("Coose a number of players between maximal 2 and "
+        while (nPlayers < 2 || nPlayers > MAX_NUMBER_OF_PLAYERS) {
+            output("Choose a number of players between maximal 2 and "
                     + MAX_NUMBER_OF_PLAYERS);
             nPlayers = getIntInput();
         }
@@ -470,112 +518,28 @@ public class Poker {
         return nPlayers;
     }
 
-    private Integer getIntInput() {
-        Scanner input = new Scanner(System.in);
-        Integer entry;
+    private void output(String message) {
+        System.out.println(message);
+    }
 
-        try {
-            entry = input.nextInt();
-        } catch (Exception e) {
-            return null;
+    private Integer getIntInput() {
+        Integer entry = null;
+
+        while (entry == null) {
+            Scanner input = new Scanner(System.in);
+
+            try {
+                entry = input.nextInt();
+            } catch (Exception e) {
+                entry = null;
+            }
         }
 
         return entry;
     }
 
-    private CircularList<Player> createPlayersFromNames(ArrayList<String> names) {
-        CircularList<Player> result = new CircularList<>();
-
-        for (int i = 0; i < names.size(); ++i) {
-            result.add(new Player(names.get(i),
-                    MINIMAL_STARTING_CHIPS_PER_PLAYER));
-        }
-
-        return result;
-    }
-
-    private String promptPlayerName() {
-        Scanner input = new Scanner(System.in);
-        output("Enter a player's name");
-
-        return input.next();
-    }
-
-    @Override
-    public String toString() {
-        String res = "Poker{" + "\nMAX_NUMBER_OF_PLAYERS="
-                + MAX_NUMBER_OF_PLAYERS;
-        res += ",\ncards=" + cards.toString();
-        res += ",\nboard=" + board;
-        res += ",\nmuck=" + muck;
-        res += ",\nplayers=[";
-
-        for (int i = 0; i < players.size(); ++i) {
-            res += "\n" + i + ":" + players.get(i);
-        }
-
-        res += "],\nbuttonPlayer=";
-
-        if (buttonPlayer != null) {
-            res += buttonPlayer.getName();
-        } else {
-            res += "no one";
-        }
-
-        res += ",\nsmallBlindPlayer=";
-
-        if (smallBlindPlayer != null) {
-            res += smallBlindPlayer.getName();
-        } else {
-            res += "no one";
-        }
-
-        res += ",\nbigBlindPlayer=";
-
-        if (bigBlindPlayer != null) {
-            res += bigBlindPlayer.getName();
-        } else {
-            res += "no one";
-        }
-
-        res += "}";
-
-        return res;
-    }
-
-    /*@Override
-     public String toString() {
-     return "Poker{" + "MAX_NUMBER_OF_PLAYERS=" + MAX_NUMBER_OF_PLAYERS
-     + ", MINIMAL_STARTING_CHIPS_PER_PLAYER="
-     + MINIMAL_STARTING_CHIPS_PER_PLAYER
-     + ", cards=" + cards
-     + ", board=" + board
-     + ", muck=" + muck
-     + ", players=" + players
-     + ", buttonPlayer="
-     + buttonPlayer != null? buttonPlayer.getName(): "no one"
-     + ", smallBlindPlayer=" 
-     + smallBlindPlayer != null? smallBlindPlayer.getName(): "no one"
-     + ", bigBlindPlayer=" 
-     + bigBlindPlayer != null? bigBlindPlayer.getName(): "no one"
-     + ", whoRaised=" 
-     + whoRaised != null? whoRaised.getName(): "no one"
-     + ", smallBlind=" + smallBlind
-     + ", bigBlind=" + bigBlind
-     + ", pot=" + pot
-     + ", highestBet=" + highestBet + '}';
-     }*/
-    private Card removeTopCard() {
-        return cards.pop();
-    }
-
-    private static void output(String message) {
-        System.out.println(message);
-    }
-
     public static void main(String args[]) {
         Poker poker = new Poker();
-        poker.game();
-        //Poker.output(poker.toString());
+        poker.start();
     }
 }

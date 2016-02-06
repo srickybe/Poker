@@ -17,18 +17,21 @@ public class CardDeck {
      * Create a 52-card deck. The cards are ordered from rank 2 to rank ace, and
      * the suits in alphabetic order. The card at the top is Ace Spades and at
      * the bottom, Two Clubs.
+     *
      * @return a 52-card deck
      */
-    public static CardDeck createFiftyTwoCardsDeck() {
+    public static CardDeck createFiftyTwoCardDeck() {
         CardDeck cardDeck = new CardDeck();
 
         for (Card c : Card.values()) {
-            if (!cardDeck.add(c)) {
-                //TODO throw an Exception
-            }
+            cardDeck.add(c);
         }
 
         return cardDeck;
+    }
+
+    public static CardDeck createEmptyCardDeck() {
+        return new CardDeck();
     }
 
     private final Stack<Card> cards;
@@ -37,8 +40,14 @@ public class CardDeck {
         cards = new Stack<>();
     }
 
-    private boolean add(Card c) {
-        return cards.add(c);
+    public void add(Card c) {
+        if (!cards.contains(c)) {
+            cards.add(c);
+        } else {
+
+            throw new UnsupportedOperationException(
+                    "Card deck contains a single copy of each card");
+        }
     }
 
     public Card pop() {
@@ -73,7 +82,7 @@ public class CardDeck {
     }
 
     public static void main(String args[]) {
-        CardDeck cardDeck = CardDeck.createFiftyTwoCardsDeck();
+        CardDeck cardDeck = CardDeck.createFiftyTwoCardDeck();
         System.out.println("cardDeck" + cardDeck);
     }
 }
