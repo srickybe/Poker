@@ -99,7 +99,6 @@ public class Poker {
 
         while (true) {
             index = nextIndex(index);
-
             player = players.get(index);
 
             if (player.isActive()) {
@@ -136,17 +135,17 @@ public class Poker {
         int last = players.indexOf(lastPlayer);
 
         if (first < last) {
-            return allCheckedFromToAux1(first, last);
+            return allCheckedFromFirstToLast(first, last);
         } else {
             if (first > last) {
-                return allCheckedFromToAux2(last, first);
+                return allCheckedFromLastToEnd(last, first);
             } else {
-                return allCheckedFromToAux2(last, first);
+                return allCheckedFromLastToEnd(last, first);
             }
         }
     }
 
-    private boolean allCheckedFromToAux2(int last, int first) {
+    private boolean allCheckedFromLastToEnd(int last, int first) {
         for (int i = last; i < players.size(); ++i) {
             Player player = players.get(i);
 
@@ -155,10 +154,10 @@ public class Poker {
             }
         }
 
-        return allCheckedFromToAux1(0, first);
+        return allCheckedFromFirstToLast(0, first);
     }
 
-    private boolean allCheckedFromToAux1(int first, int last) {
+    private boolean allCheckedFromFirstToLast(int first, int last) {
         for (int i = first; i <= last; ++i) {
             Player player = players.get(i);
 
