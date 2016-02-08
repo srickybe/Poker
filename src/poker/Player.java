@@ -14,27 +14,21 @@ import java.util.Scanner;
  */
 public class Player {
 
-    private final Action ACTIONS[] = {
-        Action.ALL_IN,
-        Action.CALL,
-        Action.CHECK,
-        Action.FOLD,
-        Action.RAISE
-    };
+    private static String actionPromptMessage() {
+        String res = "\nType:\n";
+        Action[] actions = Action.values();
 
-    private final String ACT_PROMPT_MESSAGE
-            = "Type\n"
-            + "0, TO " + ACTIONS[0].toString() + "\n"
-            + "1, TO " + ACTIONS[1].toString() + "\n"
-            + "2, TO " + ACTIONS[2].toString() + "\n"
-            + "3, TO " + ACTIONS[3].toString() + "\n"
-            + "4, TO " + ACTIONS[4].toString() + "\n";
+        for (int i = 0; i < actions.length; ++i){
+            res += i + ", TO " + actions[i].toString() + "\n";
+        }
+
+        return res;
+    }
 
     private final String name;
-    private Action latestAction;
     private final Hand hole;
     private final Hand hand;
-    //private final Action latestAction;
+    private Action latestAction;
     private Integer chips;
     private int currentBet;
     private boolean hasFolded;
@@ -78,10 +72,11 @@ public class Player {
     public boolean hasFolded() {
         return hasFolded;
     }
-    
+
     public void setLatestAction(Action latestAction) {
         this.latestAction = latestAction;
     }
+
     public void setCurrentBet(int currentBet) {
         this.currentBet = currentBet;
         output(name + "\tcurrent bet = " + currentBet);
@@ -89,7 +84,7 @@ public class Player {
 
     public int getActionChoice() {
         while (true) {
-            output(getName() + ": " + ACT_PROMPT_MESSAGE);
+            output(getName() + ": " + actionPromptMessage());
 
             Integer choice = getIntInput();
 
@@ -100,7 +95,7 @@ public class Player {
     }
 
     public Decision act(int bigBlind, int highestBet) {
-        Action chosenAction = ACTIONS[this.getActionChoice()];
+        Action chosenAction = Action.values()[this.getActionChoice()];
         int bet = this.bet(chosenAction, bigBlind, highestBet);
 
         return new Decision(chosenAction, bet);
@@ -257,7 +252,7 @@ public class Player {
         int maxRaise = getChips() - highestBet;
 
         while (true) {
-            output(getName() + ": " + ACT_PROMPT_MESSAGE);
+            output(getName() + ": " + actionPromptMessage());
             output(betInfo(bigBlind, highestBet));
             output(raiseExample(bigBlind, highestBet));
             raise = this.getIntInput();
