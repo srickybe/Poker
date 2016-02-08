@@ -46,7 +46,7 @@ public class CardDeck {
         } else {
 
             throw new UnsupportedOperationException(
-                    "Card deck contains a single copy of each card");
+                    "Card deck should contain a single copy of each card");
         }
     }
 

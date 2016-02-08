@@ -13,6 +13,7 @@ import java.util.Stack;
  *
  * @author john
  */
+//TODO Factorise makeAllPlayersBet() and bettingRound2()
 public class Poker {
 
     private final int MAX_NUMBER_OF_PLAYERS = 10;
@@ -70,14 +71,14 @@ public class Poker {
         flop();
         addFlopToPlayersHand();
         output(this.toString());
-        bettingRound2();
+        bettingRound();
         closeBettingRound();
         burnOneCard();
         turn();
         output("board = " + board);
         addCardToPlayersHand(board.lastElement());
         output(this.toString());
-        bettingRound2();
+        bettingRound();
         closeBettingRound();
     }
 
@@ -85,8 +86,10 @@ public class Poker {
         board.add(cards.pop());
     }
 
-    private void bettingRound2() {
-        int index = indexOfFirstActivePlayerAfter(buttonIndex);
+    private void bettingRound() {
+        int index = whoRaised == null
+                ? indexOfFirstActivePlayerAfter(buttonIndex)
+                : indexOfFirstActivePlayerAfter(players.indexOf(whoRaised));
 
         if (index == players.size()) {
             throw new UnsupportedOperationException();
@@ -94,7 +97,7 @@ public class Poker {
 
         Player firstPlayer = players.get(index);
         Player player = firstPlayer;
-        Decision decision = getDecision2(player);
+        Decision decision = getDecision(player);
         apply(decision, player);
 
         while (true) {
@@ -102,19 +105,19 @@ public class Poker {
             player = players.get(index);
 
             if (player.isActive()) {
-                decision = getDecision2(player);
+                decision = getDecision(player);
 
                 apply(decision, player);
                 Action action = decision.getAction();
 
-                if (actionEndedBettingRound2(action, player, firstPlayer)) {
+                if (isEndOfBettingRound(action, player, firstPlayer)) {
                     break;
                 }
             }
         }
     }
 
-    private boolean actionEndedBettingRound2(
+    private boolean isEndOfBettingRound(
             Action action,
             Player player,
             Player firstPlayer) {
@@ -206,13 +209,13 @@ public class Poker {
         return pos;
     }
 
-    private Decision getDecision2(Player player) {
+    private Decision getDecision(Player player) {
         Decision decision;
 
         while (true) {
             decision = player.act(bigBlind, highestBet);
 
-            if (isValidAction2(decision.getAction(), player)) {
+            if (isValidAction(decision.getAction(), player)) {
                 break;
             }
         }
@@ -220,11 +223,11 @@ public class Poker {
         return decision;
     }
 
-    public boolean isValidAction2(Action action, Player player) {
-        return (action != Action.RAISE || player.canRaise(bigBlind, highestBet))
-                && (action != Action.CHECK || whoRaised == null || player == whoRaised)
-                && (action != Action.FOLD || player != whoRaised)
-                && (action != Action.CALL || whoRaised != null);
+    public boolean isValidAction(Action action, Player player) {
+        return (!action.isRaise() || player.canRaise(bigBlind, highestBet))
+                && (!action.isCheck() || whoRaised == null || player == whoRaised)
+                && (!action.isFold() || player != whoRaised)
+                && (!action.isCall() || (player != whoRaised && whoRaised != null));
     }
 
     private void addFlopToPlayersHand() {
@@ -253,9 +256,8 @@ public class Poker {
         muck.add(cards.pop());
     }
 
-    public void preFlop() {
-        makeAllPlayersBet();
-        //bettingRound2();
+    private void preFlop() {
+        bettingRound();
         closeBettingRound();
     }
 
@@ -299,40 +301,10 @@ public class Poker {
         return result;
     }
 
-    public void makeAllPlayersBet() {
-        int index = indexOfUnderTheGun();
-
-        while (true) {
-            Player player = players.get(index);
-
-            if (player.isActive()) {
-                Decision decision = getDecision(player);
-
-                apply(decision, player);
-
-                if (actionEndedPreFlop(decision.getAction(), player)) {
-                    break;
-                }
-            }
-
-            index = nextIndex(index);
-        }
-    }
-
     private int nextIndex(int index) {
         index += 1;
 
         if (index == players.size()) {
-            index = 0;
-        }
-
-        return index;
-    }
-
-    private int indexOfUnderTheGun() {
-        int index = bigBlindIndex + 1;
-
-        if (index >= players.size()) {
             index = 0;
         }
 
@@ -366,17 +338,6 @@ public class Poker {
         player.setLatestAction(decision.getAction());
     }
 
-    private boolean actionEndedPreFlop(Action action, Player player) {
-        if ((action == Action.CHECK) && (player == whoRaised)) {
-            return true;
-        } else {
-            if ((action == Action.FOLD) && (countActivePlayer() == 1)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private int countActivePlayer() {
         int count = 0;
 
@@ -387,28 +348,6 @@ public class Poker {
         }
 
         return count;
-    }
-
-    private Decision getDecision(Player player) {
-        Decision decision;
-
-        while (true) {
-            decision = player.act(bigBlind, highestBet);
-
-            if (isValidAction(decision.getAction(), player)) {
-                break;
-            }
-        }
-
-        return decision;
-    }
-
-    public boolean isValidAction(Action action, Player player) {
-
-        return (action != Action.RAISE || player.canRaise(bigBlind, highestBet))
-                && (action != Action.CHECK || player == whoRaised)
-                && (action != Action.FOLD || player != whoRaised)
-                && (action != Action.CALL || player != whoRaised);
     }
 
     public void dealOneCardToPlayers() {
