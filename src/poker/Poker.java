@@ -65,12 +65,15 @@ public class Poker {
         setHighestBet(bigBlind);
         dealOneCardToPlayers();
         dealOneCardToPlayers();
+        output("*****PREFLOP*****");
         preFlop();
         output(this.toString());
         burnOneCard();
+        output("*****FLOP*****");
         flop();
         addFlopToPlayersHand();
         output(this.toString());
+        output("*****BETTING ROUND*****");
         bettingRound();
         closeBettingRound();
         burnOneCard();
@@ -78,6 +81,15 @@ public class Poker {
         output("board = " + board);
         addCardToPlayersHand(board.lastElement());
         output(this.toString());
+        output("*****BETTING ROUND*****");
+        bettingRound();
+        closeBettingRound();
+        burnOneCard();
+        river();
+        output("board = " + board);
+        addCardToPlayersHand(board.lastElement());
+        output(this.toString());
+        output("*****BETTING ROUND*****");
         bettingRound();
         closeBettingRound();
     }
@@ -86,49 +98,52 @@ public class Poker {
         board.add(cards.pop());
     }
 
+    private void river() {
+        board.add(cards.pop());
+    }
+
     private void bettingRound() {
-        int index = whoRaised == null
-                ? indexOfFirstActivePlayerAfter(buttonIndex)
-                : indexOfFirstActivePlayerAfter(players.indexOf(whoRaised));
-
-        if (index == players.size()) {
-            throw new UnsupportedOperationException();
-        }
-
+        int index = indexOfStartingPlayer();
         Player firstPlayer = players.get(index);
         Player player = firstPlayer;
         Decision decision = getDecision(player);
         apply(decision, player);
+        Action action = decision.getAction();
 
-        while (true) {
+        while (!isEndOfBettingRound(action, player, firstPlayer)) {
             index = nextIndex(index);
             player = players.get(index);
-
+            
             if (player.isActive()) {
                 decision = getDecision(player);
-
                 apply(decision, player);
-                Action action = decision.getAction();
-
-                if (isEndOfBettingRound(action, player, firstPlayer)) {
-                    break;
-                }
+                action = decision.getAction();
             }
         }
+    }
+
+    private int indexOfStartingPlayer() throws UnsupportedOperationException {
+        int index = whoRaised == null
+                ? indexOfFirstActivePlayerAfter(buttonIndex)
+                : indexOfFirstActivePlayerAfter(players.indexOf(whoRaised));
+        if (index == players.size()) {
+            throw new UnsupportedOperationException();
+        }
+        return index;
     }
 
     private boolean isEndOfBettingRound(
             Action action,
             Player player,
             Player firstPlayer) {
-        if ((action == Action.CHECK)
+        if ((action.isCheck())
                 && (player == whoRaised
                 || (allCheckedFromTo(firstPlayer, player)
                 && player == firstPlayer))) {
             return true;
         }
 
-        return (action == Action.FOLD) && (countActivePlayer() == 1);
+        return (action.isFold()) && (countActivePlayer() == 1);
     }
 
     private boolean allCheckedFromTo(
@@ -139,12 +154,10 @@ public class Poker {
 
         if (first < last) {
             return allCheckedFromFirstToLast(first, last);
+        } else if (first > last) {
+            return allCheckedFromLastToEnd(last, first);
         } else {
-            if (first > last) {
-                return allCheckedFromLastToEnd(last, first);
-            } else {
-                return allCheckedFromLastToEnd(last, first);
-            }
+            return allCheckedFromLastToEnd(last, first);
         }
     }
 
@@ -152,7 +165,7 @@ public class Poker {
         for (int i = last; i < players.size(); ++i) {
             Player player = players.get(i);
 
-            if (player.isActive() && player.getLatestAction() != Action.CHECK) {
+            if (player.isActive() && !player.getLatestAction().isCheck()) {
                 return false;
             }
         }
@@ -164,7 +177,7 @@ public class Poker {
         for (int i = first; i <= last; ++i) {
             Player player = players.get(i);
 
-            if (player.isActive() && player.getLatestAction() != Action.CHECK) {
+            if (player.isActive() && !player.getLatestAction().isCheck()) {
                 return false;
             }
         }
@@ -347,6 +360,7 @@ public class Poker {
             }
         }
 
+        output("COUNT = " + count);
         return count;
     }
 
