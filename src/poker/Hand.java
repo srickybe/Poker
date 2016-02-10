@@ -26,7 +26,7 @@ public class Hand implements Comparable<Hand> {
         Evaluation e2;
         e1 = this.computeTypeAndValue();
         e2 = other.computeTypeAndValue();
-        
+
         return e1.compareTo(e2);
     }
 
@@ -41,8 +41,34 @@ public class Hand implements Comparable<Hand> {
         return false;
     }
 
+    public boolean contains(Card card) {
+        return cards.contains(card);
+    }
+
     public Card getCard(int index) {
         return cards.get(index);
+    }
+
+    public Hand kickers(Hand bestHand) {
+        Hand res = null;
+
+        if (size() == 7 && bestHand.size() == 5) {
+            res = new Hand();
+
+            for (int j = 0; j < size(); ++j) {
+                Card card = getCard(j);
+
+                if (!bestHand.contains(card)) {
+                    res.addCard(card);
+
+                    if (res.size() == 2) {
+                        return res;
+                    }
+                }
+            }
+        }
+
+        return res;
     }
 
     public int size() {
@@ -439,13 +465,13 @@ public class Hand implements Comparable<Hand> {
             }
 
             System.out.println("hand = " + hand);
-            System.out.println("hand.computeTypeAndValue() = "
-                    + hand.computeTypeAndValue());
             Hand bestHand = Hand.bestHandFrom7Cards(hand);
             System.out.println("best hand = " + bestHand);
-            System.out.println("best hand type and value = "
-                    + bestHand.computeTypeAndValue());
+            Evaluation eval = bestHand.computeTypeAndValue();
+            System.out.println("best hand type and value = " + eval);
             System.out.println("hand = " + hand + "\n\n");
+            Hand kickers = hand.kickers(bestHand);
+            System.out.println("kickers = " + kickers + "\n\n");
         }
     }
 }
