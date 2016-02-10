@@ -22,12 +22,7 @@ public class Hand implements Comparable<Hand> {
 
     @Override
     public int compareTo(Hand other) {
-        Evaluation e1;
-        Evaluation e2;
-        e1 = this.computeTypeAndValue();
-        e2 = other.computeTypeAndValue();
-
-        return e1.compareTo(e2);
+        return computeTypeAndValue().compareTo(other.computeTypeAndValue());
     }
 
     public boolean addCard(Card card) {
@@ -47,28 +42,6 @@ public class Hand implements Comparable<Hand> {
 
     public Card getCard(int index) {
         return cards.get(index);
-    }
-
-    public Hand kickers(Hand bestHand) {
-        Hand res = null;
-
-        if (size() == 7 && bestHand.size() == 5) {
-            res = new Hand();
-
-            for (int j = 0; j < size(); ++j) {
-                Card card = getCard(j);
-
-                if (!bestHand.contains(card)) {
-                    res.addCard(card);
-
-                    if (res.size() == 2) {
-                        return res;
-                    }
-                }
-            }
-        }
-
-        return res;
     }
 
     public int size() {
@@ -363,10 +336,10 @@ public class Hand implements Comparable<Hand> {
                 return this;
 
             case 6:
-                return bestHandFrom6Cards(this);
+                return bestHandFrom6Cards();
 
             case 7:
-                return bestHandFrom7Cards(this);
+                return bestHandFrom7Cards();
 
             default:
                 throw new UnsupportedOperationException("A hand has at most "
@@ -374,77 +347,63 @@ public class Hand implements Comparable<Hand> {
         }
     }
 
-    private static Hand bestHandFrom7Cards(Hand hnd) {
-        if (hnd.cards.size() != 7) {
+    private Hand bestHandFrom7Cards() {
+        if (size() != 7) {
             return null;
         }
 
         Hand result = null;
-        int maxRank = 0;
-        int maxValue = -1;
+        Evaluation maxEval = new Evaluation(HandType.HIGH_CARD, -1);
 
-        for (int i = 0; i < hnd.cards.size(); ++i) {
-            Card c1 = hnd.cards.remove(i);
+        for (int i = 0; i < size(); ++i) {
+            Card c1 = cards.remove(i);
 
-            for (int j = i; j < hnd.size(); ++j) {
-                Card c2 = hnd.cards.remove(j);
-                Hand tmp = new Hand();
-                tmp.addCard(hnd.cards.get(0));
-                tmp.addCard(hnd.cards.get(1));
-                tmp.addCard(hnd.cards.get(2));
-                tmp.addCard(hnd.cards.get(3));
-                tmp.addCard(hnd.cards.get(4));
-                Evaluation eval = tmp.computeTypeAndValue();
+            for (int j = i; j < size(); ++j) {
+                Card c2 = cards.remove(j);
+                Evaluation eval = computeTypeAndValue();
 
-                if (eval.getRank() > maxRank) {
-                    maxRank = eval.getRank();
-                    maxValue = eval.getValue();
-                    result = tmp;
-                } else if (eval.getRank() == maxRank
-                        && eval.getValue() > maxValue) {
-                    maxValue = eval.getValue();
-                    result = tmp;
+                if (eval.compareTo(maxEval) > 0) {
+                    maxEval = eval;
+                    result = new Hand();
+                    result.addCard(getCard(0));
+                    result.addCard(getCard(1));
+                    result.addCard(getCard(2));
+                    result.addCard(getCard(3));
+                    result.addCard(getCard(4));
                 }
 
-                hnd.cards.add(j, c2);
+                cards.add(j, c2);
             }
 
-            hnd.cards.add(i, c1);
+            cards.add(i, c1);
         }
 
         return result;
     }
 
-    private static Hand bestHandFrom6Cards(Hand hnd) {
-        if (hnd.cards.size() != 6) {
+    private Hand bestHandFrom6Cards() {
+        if (size() != 6) {
             return null;
         }
 
         Hand result = null;
-        int maxRank = 0;
-        int maxValue = -1;
+        Evaluation maxEval = new Evaluation(HandType.HIGH_CARD, -1);
 
-        for (int i = 0; i < hnd.size(); ++i) {
-            Card c2 = hnd.cards.remove(i);
-            Hand tmp = new Hand();
-            tmp.addCard(hnd.cards.get(0));
-            tmp.addCard(hnd.cards.get(1));
-            tmp.addCard(hnd.cards.get(2));
-            tmp.addCard(hnd.cards.get(3));
-            tmp.addCard(hnd.cards.get(4));
-            Evaluation eval = tmp.computeTypeAndValue();
+        for (int i = 0; i < size(); ++i) {
+            Card c2 = cards.remove(i);
+            Evaluation eval = computeTypeAndValue();
 
-            if (eval.getRank() > maxRank) {
-                maxRank = eval.getRank();
-                maxValue = eval.getValue();
-                result = tmp;
-            } else if (eval.getRank() == maxRank
-                    && eval.getValue() > maxValue) {
-                maxValue = eval.getValue();
-                result = tmp;
+            if (eval.compareTo(maxEval) > 0) {
+                maxEval = eval;
+                result = new Hand();
+                result.addCard(getCard(0));
+                result.addCard(getCard(1));
+                result.addCard(getCard(2));
+                result.addCard(getCard(3));
+                result.addCard(getCard(4));
             }
 
-            hnd.cards.add(i, c2);
+            cards.add(i, c2);
         }
 
         return result;
@@ -465,13 +424,11 @@ public class Hand implements Comparable<Hand> {
             }
 
             System.out.println("hand = " + hand);
-            Hand bestHand = Hand.bestHandFrom7Cards(hand);
+            Hand bestHand = hand.bestHandFrom7Cards();
             System.out.println("best hand = " + bestHand);
             Evaluation eval = bestHand.computeTypeAndValue();
             System.out.println("best hand type and value = " + eval);
             System.out.println("hand = " + hand + "\n\n");
-            Hand kickers = hand.kickers(bestHand);
-            System.out.println("kickers = " + kickers + "\n\n");
         }
     }
 }
