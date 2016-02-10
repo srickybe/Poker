@@ -18,8 +18,10 @@ public class Player {
         String res = "\nType:\n";
         Action[] actions = Action.values();
 
-        for (int i = 0; i < actions.length; ++i){
-            res += i + ", TO " + actions[i].toString() + "\n";
+        for (int i = 0; i < actions.length; ++i) {
+            if (!actions[i].isNone()) {
+                res += i + ", TO " + actions[i].toString() + "\n";
+            }
         }
 
         return res;
@@ -73,6 +75,10 @@ public class Player {
         return hasFolded;
     }
 
+    public void resetLatestAction() {
+        latestAction = Action.NONE;
+    }
+
     public void setLatestAction(Action latestAction) {
         this.latestAction = latestAction;
     }
@@ -82,20 +88,26 @@ public class Player {
         output(name + "\tcurrent bet = " + currentBet);
     }
 
+    public void addChips(int chips) {
+        this.chips += chips;
+    }
+
     public int getActionChoice() {
         while (true) {
             output(getName() + ": " + actionPromptMessage());
 
             Integer choice = getIntInput();
 
-            if (choice != null && choice >= 0 && choice <= 4) {
+            if (choice != null
+                    && choice >= 0
+                    && choice < Action.values().length) {
                 return choice;
             }
         }
     }
 
     public Decision act(int bigBlind, int highestBet) {
-        Action chosenAction = Action.values()[this.getActionChoice()];
+        Action chosenAction = Action.values()[getActionChoice()];
         int bet = this.bet(chosenAction, bigBlind, highestBet);
 
         return new Decision(chosenAction, bet);
@@ -139,6 +151,10 @@ public class Player {
                 throw new UnsupportedOperationException();
             }
         }
+    }
+
+    public Hand bestHand() {
+        return hand.bestHand();
     }
 
     public int betSmallBlind() {
@@ -189,6 +205,23 @@ public class Player {
         }
 
         return entry;
+    }
+
+    public String getDecisionToShowHand() {
+        Scanner input = new Scanner(System.in);
+        String decision = null;
+
+        while (decision == null 
+                || (!"Y".equals(decision) 
+                && !"N".equals(decision))) {
+            try {
+                decision = input.next();
+            } catch (Exception e) {
+                decision = null;
+            }
+        }
+        
+        return decision;
     }
 
     public void fold() {

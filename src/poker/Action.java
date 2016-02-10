@@ -10,11 +10,11 @@ package poker;
  * @author john
  */
 public enum Action {
-
     ALL_IN,
     CALL,
     CHECK,
     FOLD,
+    NONE,
     RAISE;
 
     boolean isAllIn() {
@@ -33,6 +33,10 @@ public enum Action {
         return this.equals(FOLD);
     }
 
+    boolean isNone(){
+        return this.equals(NONE);
+    }
+    
     boolean isRaise() {
         return this.equals(RAISE);
     }

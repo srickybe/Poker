@@ -11,7 +11,7 @@ import java.util.Comparator;
  *
  * @author ricky
  */
-public class DecreasingSense implements Comparator<Card> {
+public class CardComparator implements Comparator<Card> {
 
     @Override
     public int compare(Card c1, Card c2) {

@@ -25,6 +25,8 @@ public class Poker {
     private int smallBlindIndex;
     private int bigBlindIndex;
     private Player whoRaised;
+    private Player lastToRaise;
+    private Player winner;
     private int pot;
     private int smallBlind;
     private int bigBlind;
@@ -57,6 +59,90 @@ public class Poker {
     }
 
     public void start() {
+        roundZero();
+
+        if (hasWinner()) {
+            winner.addChips(pot);
+            return;
+        }
+
+        roundOne();
+
+        if (hasWinner()) {
+            winner.addChips(pot);
+            return;
+        }
+
+        roundTwo();
+
+        if (hasWinner()) {
+            winner.addChips(pot);
+            return;
+        }
+
+        roundThree();
+
+        if (hasWinner()) {
+            winner.addChips(pot);
+        } else {
+            showdown();
+        }
+    }
+
+    private void showdown() {
+        int index
+                = lastToRaise != null
+                        ? players.indexOf(lastToRaise)
+                        : buttonIndex;
+        ArrayList<Player> winners = new ArrayList<>();
+        Player currentWinner = players.get(index);
+        winners.add(currentWinner);
+        currentWinner.output(currentWinner.getName()
+                + ", SHOW YOUR HAND, PLEASE");
+        Hand bestHand = currentWinner.bestHand();
+        output("Best hand = " + bestHand.toString());
+
+        for (int i = nextIndex(index); i < players.size(); i = nextIndex(i)) {
+            if (i == index) {
+                break;
+            }
+
+            Player player = players.get(i);
+
+            if (player.isActive()) {
+                player.output(player.getName() + ", WILL YOU SHOW YOUR HAND?");
+                String decision = player.getDecisionToShowHand();
+                output("decision = " + decision);
+
+                if ("Y".equals(decision)) {
+                    Hand hand = player.bestHand();
+                    int cmp = bestHand.compareTo(hand);
+                    output("hand = " + hand.toString());
+                    output("cmp = " + cmp);
+
+                    if (cmp < 0) {
+                        output(player.getName()
+                                + " has up to now the best Hand");
+                        bestHand = hand;
+                        winners.clear();
+                        winners.add(player);
+                    } else if (cmp == 0) {
+                        output(player.getName() + " has an equal hand");
+                        winners.add(player);
+                    }
+                }
+            }
+        }
+
+        output("The winner(s) is (are): " + winners.toString() + "\n");
+        output("The best is:\n" + bestHand);
+    }
+
+    private boolean hasWinner() {
+        return winner != null;
+    }
+
+    private void roundZero() {
         shuffleCards();
         resetPlayersRole();
         setSmallBlind();
@@ -68,22 +154,10 @@ public class Poker {
         output("*****PREFLOP*****");
         preFlop();
         output(this.toString());
-        burnOneCard();
-        output("*****FLOP*****");
-        flop();
-        addFlopToPlayersHand();
-        output(this.toString());
-        output("*****BETTING ROUND*****");
-        bettingRound();
-        closeBettingRound();
-        burnOneCard();
-        turn();
-        output("board = " + board);
-        addCardToPlayersHand(board.lastElement());
-        output(this.toString());
-        output("*****BETTING ROUND*****");
-        bettingRound();
-        closeBettingRound();
+    }
+
+    private void roundThree() {
+        output("*****River*****");
         burnOneCard();
         river();
         output("board = " + board);
@@ -92,6 +166,32 @@ public class Poker {
         output("*****BETTING ROUND*****");
         bettingRound();
         closeBettingRound();
+    }
+
+    private void roundTwo() {
+        output("*****TURN*****");
+        burnOneCard();
+        turn();
+        output("board = " + board);
+        addCardToPlayersHand(board.lastElement());
+        output(this.toString());
+        output("*****BETTING ROUND*****");
+        bettingRound();
+        closeBettingRound();
+        resetAllPlayersLatestAction();
+    }
+
+    private void roundOne() {
+        burnOneCard();
+        output("*****FLOP*****");
+        flop();
+        output("board = " + board);
+        addFlopToPlayersHand();
+        output(this.toString());
+        output("*****BETTING ROUND*****");
+        bettingRound();
+        closeBettingRound();
+        resetAllPlayersLatestAction();
     }
 
     private void turn() {
@@ -103,22 +203,28 @@ public class Poker {
     }
 
     private void bettingRound() {
+        lastToRaise = null;
         int index = indexOfStartingPlayer();
         Player firstPlayer = players.get(index);
-        Player player = firstPlayer;
-        Decision decision = getDecision(player);
-        apply(decision, player);
-        Action action = decision.getAction();
 
-        while (!isEndOfBettingRound(action, player, firstPlayer)) {
-            index = nextIndex(index);
-            player = players.get(index);
-            
+        while (true) {
+            Player player = players.get(index);
+
             if (player.isActive()) {
-                decision = getDecision(player);
+                Decision decision = getDecision(player);
                 apply(decision, player);
-                action = decision.getAction();
+                Action action = decision.getAction();
+
+                if (action.isRaise()) {
+                    lastToRaise = player;
+                }
+
+                if (isEndOfBettingRound(action, player, firstPlayer)) {
+                    return;
+                }
             }
+
+            index = nextIndex(index);
         }
     }
 
@@ -136,14 +242,24 @@ public class Poker {
             Action action,
             Player player,
             Player firstPlayer) {
-        if ((action.isCheck())
-                && (player == whoRaised
-                || (allCheckedFromTo(firstPlayer, player)
-                && player == firstPlayer))) {
+
+        if (action.isCheck()) {
+            if (player == whoRaised) {
+                return true;
+            }
+
+            if (player == firstPlayer && allCheckedFromTo(firstPlayer, player)) {
+                return true;
+            }
+        }
+
+        if (action.isFold() && countActivePlayer() == 1) {
+            winner = players.get(indexOfFirstActivePlayerAfter(0));
+            output("#####WINNER = " + winner.getName() + "!!!!!!!!");
             return true;
         }
 
-        return (action.isFold()) && (countActivePlayer() == 1);
+        return false;
     }
 
     private boolean allCheckedFromTo(
@@ -272,6 +388,7 @@ public class Poker {
     private void preFlop() {
         bettingRound();
         closeBettingRound();
+        resetAllPlayersLatestAction();
     }
 
     private void closeBettingRound() {
@@ -282,6 +399,12 @@ public class Poker {
         setSmallBlindIndex(-1);
         setBigBlindIndex(-1);
         setWhoRaised(null);
+    }
+
+    private void resetAllPlayersLatestAction() {
+        for (int i = 0; i < players.size(); ++i) {
+            players.get(i).resetLatestAction();
+        }
     }
 
     private void setSmallBlindIndex(int index) {
