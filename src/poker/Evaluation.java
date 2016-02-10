@@ -33,7 +33,7 @@ public class Evaluation implements Comparable<Evaluation> {
     
     @Override
     public String toString() {
-        return "Eval1{" + "handType=" + handType + ", value=" + value + '}';
+        return "Eval{" + "handType=" + handType + ", value=" + value + '}';
     }
 
     @Override

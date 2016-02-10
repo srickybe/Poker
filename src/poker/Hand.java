@@ -411,7 +411,7 @@ public class Hand implements Comparable<Hand> {
 
     @Override
     public String toString() {
-        return "Hand1{" + "cards=" + cards + '}';
+        return "Hand{" + "cards=" + cards + '}';
     }
 
     public static void main(String[] args) {
