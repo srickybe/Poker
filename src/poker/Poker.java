@@ -215,10 +215,6 @@ public class Poker {
                 apply(decision, player);
                 Action action = decision.getAction();
 
-                if (action.isRaise()) {
-                    lastToRaise = player;
-                }
-
                 if (isEndOfBettingRound(action, player, firstPlayer)) {
                     return;
                 }
@@ -458,6 +454,7 @@ public class Poker {
                 break;
 
             case RAISE:
+                lastToRaise = player;
                 setWhoRaised(player);
                 highestBet = decision.getBet();
                 player.setCurrentBet(highestBet);
