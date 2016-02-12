@@ -124,57 +124,57 @@ public class Hand implements Comparable<Hand> {
                 || cards.get(3).sameRank(cards.get(4));
     }
 
-    public Evaluation computeTypeAndValue() {
+    public HandEvaluation computeTypeAndValue() {
         if (cards.size() != 5) {
             throw new UnsupportedOperationException("cards.size() != 5");
         }
 
         if (isStraightFlush()) {
             if (cards.get(0).getRank().equals(Rank.ACE)) {
-                return new Evaluation(
+                return new HandEvaluation(
                         HandType.ROYAL_FLUSH,
                         computeStraightFlushValue());
             }
 
-            return new Evaluation(
+            return new HandEvaluation(
                     HandType.STRAIGHT_FLUSH,
                     computeStraightFlushValue());
         }
 
         if (isFourOfAKind()) {
-            return new Evaluation(
+            return new HandEvaluation(
                     HandType.FOUR_OF_A_KIND,
                     computeFourOfAKindValue());
         }
 
         if (isFullHouse()) {
-            return new Evaluation(HandType.FULL_HOUSE, computeFullHouseValue());
+            return new HandEvaluation(HandType.FULL_HOUSE, computeFullHouseValue());
         }
 
         if (isFlush()) {
-            return new Evaluation(HandType.FLUSH, computeFlushValue());
+            return new HandEvaluation(HandType.FLUSH, computeFlushValue());
         }
 
         if (isStraight()) {
-            return new Evaluation(HandType.STRAIGHT, computeStraightValue());
+            return new HandEvaluation(HandType.STRAIGHT, computeStraightValue());
         }
 
         if (isThreeOfAKind()) {
-            return new Evaluation(
+            return new HandEvaluation(
                     HandType.THREE_OF_A_KIND,
                     computeThreeOfAKindValue());
         }
 
         if (isTwoPairs()) {
-            return new Evaluation(HandType.TWO_PAIRS, computeTwoPairsValue());
+            return new HandEvaluation(HandType.TWO_PAIRS, computeTwoPairsValue());
         }
 
         if (isOnePair()) {
-            return new Evaluation(HandType.ONE_PAIR, computeOnePairValue());
+            return new HandEvaluation(HandType.ONE_PAIR, computeOnePairValue());
         }
 
         if (cards != null) {
-            return new Evaluation(HandType.HIGH_CARD, computeHighCardValue());
+            return new HandEvaluation(HandType.HIGH_CARD, computeHighCardValue());
         }
 
         return null;
@@ -353,14 +353,14 @@ public class Hand implements Comparable<Hand> {
         }
 
         Hand result = null;
-        Evaluation maxEval = new Evaluation(HandType.HIGH_CARD, -1);
+        HandEvaluation maxEval = new HandEvaluation(HandType.HIGH_CARD, -1);
 
         for (int i = 0; i < size(); ++i) {
             Card c1 = cards.remove(i);
 
             for (int j = i; j < size(); ++j) {
                 Card c2 = cards.remove(j);
-                Evaluation eval = computeTypeAndValue();
+                HandEvaluation eval = computeTypeAndValue();
 
                 if (eval.compareTo(maxEval) > 0) {
                     maxEval = eval;
@@ -387,11 +387,11 @@ public class Hand implements Comparable<Hand> {
         }
 
         Hand result = null;
-        Evaluation maxEval = new Evaluation(HandType.HIGH_CARD, -1);
+        HandEvaluation maxEval = new HandEvaluation(HandType.HIGH_CARD, -1);
 
         for (int i = 0; i < size(); ++i) {
             Card c2 = cards.remove(i);
-            Evaluation eval = computeTypeAndValue();
+            HandEvaluation eval = computeTypeAndValue();
 
             if (eval.compareTo(maxEval) > 0) {
                 maxEval = eval;
@@ -426,7 +426,7 @@ public class Hand implements Comparable<Hand> {
             System.out.println("hand = " + hand);
             Hand bestHand = hand.bestHandFrom7Cards();
             System.out.println("best hand = " + bestHand);
-            Evaluation eval = bestHand.computeTypeAndValue();
+            HandEvaluation eval = bestHand.computeTypeAndValue();
             System.out.println("best hand type and value = " + eval);
             System.out.println("hand = " + hand + "\n\n");
         }

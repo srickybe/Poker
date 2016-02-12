@@ -44,7 +44,7 @@ public class ShowCardsImages extends Application {
             booleanProperties[i] = imageViews[i].preserveRatioProperty();
             booleanProperties[i].set(true);
 
-            if ((int) (100 * Math.random()) < 100) {
+            if ((int) (100 * Math.random()) < 60) {
                 pane.add(imageViews[i], i / 4, i % 4);
             }
         }

@@ -9,12 +9,12 @@ package poker;
  *
  * @author 1907riseyasenga
  */
-public class Evaluation implements Comparable<Evaluation> {
+public class HandEvaluation implements Comparable<HandEvaluation> {
 
     private final HandType handType;
     private final int value;
     
-    public Evaluation(HandType handType, int value) {
+    public HandEvaluation(HandType handType, int value) {
         this.handType = handType;
         this.value = value;
     }
@@ -37,7 +37,7 @@ public class Evaluation implements Comparable<Evaluation> {
     }
 
     @Override
-    public int compareTo(Evaluation right) {
+    public int compareTo(HandEvaluation right) {
         if(right == null){
             return 1;
         }
