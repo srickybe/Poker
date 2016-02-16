@@ -260,7 +260,7 @@ class Gamer {
 
         while (bet < highestBet + 2 * lastRaise || bet > getStack()) {
             System.out.println("Bet higher than "
-                    + (highestBet + lastRaise));
+                    + (highestBet + 2 * lastRaise));
             bet = getInterInput();
         }
 
