@@ -12,7 +12,7 @@ import java.util.Scanner;
  *
  * @author john
  */
-enum Action1 {
+enum Action2 {
 
     BET,
     CALL,
@@ -58,10 +58,10 @@ enum Action1 {
 
 class Decision1 {
 
-    private Action1 action;
+    private Action2 action;
     private int bet;
 
-    public Decision1(Action1 action, int bet) {
+    public Decision1(Action2 action, int bet) {
         this.action = action;
         this.bet = bet;
     }
@@ -74,11 +74,11 @@ class Decision1 {
         this.bet = bet;
     }
 
-    public Action1 getAction1() {
+    public Action2 getAction2() {
         return action;
     }
 
-    public void setAction1(Action1 action) {
+    public void setAction2(Action2 action) {
         this.action = action;
     }
 
@@ -89,7 +89,7 @@ class Gamer {
     private final String name;
     private int stack;
     private int currentBet = 0;
-    private Action1 latestAction1 = null;
+    private Action2 latestAction2 = null;
 
     Gamer(String name) {
         this.name = name;
@@ -104,21 +104,21 @@ class Gamer {
         return currentBet;
     }
 
-    public Action1 getLatestAction1() {
-        return latestAction1;
+    public Action2 getLatestAction2() {
+        return latestAction2;
     }
 
     void setCurrentBet(int bet) {
         currentBet = bet;
     }
 
-    public void setLatestAction1(Action1 latestAction1) {
-        this.latestAction1 = latestAction1;
+    public void setLatestAction2(Action2 latestAction2) {
+        this.latestAction2 = latestAction2;
     }
 
-    Decision1 act(ArrayList<Action1> actions, int highestBet, int bigBlind) {
-        Action1 action = choseAction1(actions);
-        setLatestAction1(action);
+    Decision1 act(ArrayList<Action2> actions, int highestBet, int bigBlind) {
+        Action2 action = choseAction2(actions);
+        setLatestAction2(action);
         int removedChips = 0;
 
         switch (action) {
@@ -203,7 +203,7 @@ class Gamer {
     }
 
     boolean canFullyRaise(int highestBet, int lastRaise) {
-        return highestBet + lastRaise < stack;
+        return highestBet + 2 * lastRaise < stack;
     }
 
     boolean canRaise(int highestBet, int lastRaise) {
@@ -214,7 +214,7 @@ class Gamer {
         throw new UnsupportedOperationException();
     }
 
-    Action1 choseAction1(ArrayList<Action1> actions) {
+    Action2 choseAction2(ArrayList<Action2> actions) {
         Integer choice = null;
 
         while (choice == null || choice < 0 || choice >= actions.size()) {
@@ -258,7 +258,7 @@ class Gamer {
 
         int bet = -1;
 
-        while (bet < highestBet + lastRaise || bet > getStack()) {
+        while (bet < highestBet + 2 * lastRaise || bet > getStack()) {
             System.out.println("Bet higher than "
                     + (highestBet + lastRaise));
             bet = getInterInput();
@@ -300,7 +300,7 @@ class Gamer {
         return name;
     }
 
-    private void promptPossibleActions(ArrayList<Action1> actions) {
+    private void promptPossibleActions(ArrayList<Action2> actions) {
         String message = "" + this.getName();
         for (int i = 0; i < actions.size(); ++i) {
             message += "\nType " + i + " TO " + actions.get(i).toString() + "\n";
@@ -341,7 +341,7 @@ public class Test {
     private boolean noBet(ArrayList<Gamer> gamers) {
         for (int i = 0; i < gamers.size(); ++i) {
             Gamer gamer = gamers.get(i);
-            Action1 action = gamer.getLatestAction1();
+            Action2 action = gamer.getLatestAction2();
 
             if (action != null && !action.isCheck() && !action.isFold()) {
                 return false;
@@ -361,7 +361,7 @@ public class Test {
         }
 
         for (Gamer g : gamers) {
-            Action1 action = g.getLatestAction1();
+            Action2 action = g.getLatestAction2();
 
             if (!action.isCall() || !action.isCallAllIn() || !action.isFold()) {
                 return false;
@@ -371,11 +371,11 @@ public class Test {
         return true;
     }
 
-    private int raiseCount(ArrayList<Gamer> gamers1) throws UnsupportedOperationException {
+    private int raiseCount(ArrayList<Gamer> gamers1) {
         int result = 0;
 
         for (Gamer g : gamers1) {
-            Action1 action = g.getLatestAction1();
+            Action2 action = g.getLatestAction2();
 
             if (action.isRaise()
                     || action.isRaiseAllIn()
@@ -390,7 +390,7 @@ public class Test {
 
     private boolean everyOneActed(ArrayList<Gamer> gamers1) {
         for (Gamer g : gamers1) {
-            Action1 action = g.getLatestAction1();
+            Action2 action = g.getLatestAction2();
             if (action == null) {
                 return false;
             }
@@ -401,7 +401,7 @@ public class Test {
 
     private boolean previousRaiseOrBet(ArrayList<Gamer> gamers) {
         for (Gamer g : gamers) {
-            Action1 action = g.getLatestAction1();
+            Action2 action = g.getLatestAction2();
 
             if (action != null) {
                 if (action.isBet()
@@ -456,7 +456,7 @@ public class Test {
             Gamer gamer = gamers.get(i);
             System.err.println("gamer = " + gamer);
             System.out.println("Highest bet = " + highestBet);
-            ArrayList<Action1> actions
+            ArrayList<Action2> actions
                     = possibleActions(gamer, highestBet, lastRaise);
 
             if (actions.isEmpty()) {
@@ -466,7 +466,7 @@ public class Test {
             Decision1 decision = gamer.act(actions, highestBet, lastRaise);
             System.out.println("decision = " + decision);
 
-            switch (decision.getAction1()) {
+            switch (decision.getAction2()) {
                 case BET:
                     lastRaise = decision.getBet();
                     pot += lastRaise;
@@ -540,40 +540,49 @@ public class Test {
         return gamer == whoRaised;
     }
 
-    private ArrayList<Action1> possibleActions(
+    private ArrayList<Action2> possibleActions(
             Gamer gamer,
             int highestBet,
             int lastRaise) {
-        ArrayList<Action1> possibleActions = new ArrayList<>();
+        ArrayList<Action2> possibleActions = new ArrayList<>();
 
         //bet if no one has bet yet
         //raise if you want to bet higher than a previous raiseFully or bet
         //check if no one has bet yet or you've raised and everyone called
         //call to match a previous bet or raiseFully
         if (noBet(gamers)) {
-            possibleActions.add(Action1.CHECK);
-            possibleActions.add(Action1.BET);
-            possibleActions.add(Action1.RAISE_ALL_IN);
-            possibleActions.add(Action1.FOLD);
+            possibleActions.add(Action2.CHECK);
+            possibleActions.add(Action2.BET);
+            possibleActions.add(Action2.RAISE_ALL_IN);
+            possibleActions.add(Action2.FOLD);
 
             return possibleActions;
         }
 
         if (betCalledByEveryOne(gamers)) {
-            possibleActions.add(Action1.CHECK);
+            possibleActions.add(Action2.CHECK);
+            
+            if (gamer.canFullyRaise(highestBet, lastRaise)) {
+                possibleActions.add(Action2.RAISE);
+                possibleActions.add(Action2.RAISE_ALL_IN);
+            } else {
+                if (gamer.canRaise(highestBet, lastRaise)) {
+                    possibleActions.add(Action2.RAISE_INFERIOR_TO_LAST_RAISE);
+                }
+            }
 
             return possibleActions;
         }
 
         if (previousRaiseOrBet(gamers) && gamer == whoRaised) {
-            possibleActions.add(Action1.CHECK);
+            possibleActions.add(Action2.CHECK);
 
             if (gamer.canFullyRaise(highestBet, lastRaise)) {
-                possibleActions.add(Action1.RAISE);
-                possibleActions.add(Action1.RAISE_ALL_IN);
+                possibleActions.add(Action2.RAISE);
+                possibleActions.add(Action2.RAISE_ALL_IN);
             } else {
                 if (gamer.canRaise(highestBet, lastRaise)) {
-                    possibleActions.add(Action1.RAISE_INFERIOR_TO_LAST_RAISE);
+                    possibleActions.add(Action2.RAISE_INFERIOR_TO_LAST_RAISE);
                 }
             }
 
@@ -582,22 +591,22 @@ public class Test {
 
         if (previousRaiseOrBet(gamers)) {
             if (gamer.canFullyRaise(highestBet, lastRaise)) {
-                possibleActions.add(Action1.RAISE);
-                possibleActions.add(Action1.RAISE_ALL_IN);
+                possibleActions.add(Action2.RAISE);
+                possibleActions.add(Action2.RAISE_ALL_IN);
             } else {
                 if (gamer.canRaise(highestBet, lastRaise)) {
-                    possibleActions.add(Action1.RAISE_INFERIOR_TO_LAST_RAISE);
+                    possibleActions.add(Action2.RAISE_INFERIOR_TO_LAST_RAISE);
                 }
             }
 
             if (gamer.canCall(highestBet)) {
-                possibleActions.add(Action1.CALL);
+                possibleActions.add(Action2.CALL);
 
             } else {
-                possibleActions.add(Action1.CALL_ALL_IN);
+                possibleActions.add(Action2.CALL_ALL_IN);
             }
 
-            possibleActions.add(Action1.FOLD);
+            possibleActions.add(Action2.FOLD);
 
             return possibleActions;
         }
@@ -610,31 +619,31 @@ public class Test {
         return possibleActions;
     }
 
-    /*private ArrayList<Action1> possibleActions(
+    /*private ArrayList<Action2> possibleActions(
      Gamer gamer,
      int highestBet,
      int lastRaise) {
-     ArrayList<Action1> possibleActions = new ArrayList<>();
+     ArrayList<Action2> possibleActions = new ArrayList<>();
 
-     possibleActions.add(Action1.FOLD);
+     possibleActions.add(Action2.FOLD);
 
      if (gamer.canFullyRaise(highestBet, lastRaise)) {
-     possibleActions.add(Action1.RAISE);
-     possibleActions.add(Action1.ALL_IN);
+     possibleActions.add(Action2.RAISE);
+     possibleActions.add(Action2.ALL_IN);
      }
 
      if (whoRaised == null || gamer == whoRaised) {
-     if (gamer.getLatestAction1() != Action1.ALL_IN) {
-     possibleActions.add(Action1.CHECK);
+     if (gamer.getLatestAction2() != Action2.ALL_IN) {
+     possibleActions.add(Action2.CHECK);
      } else {
-     possibleActions.remove(Action1.FOLD);
+     possibleActions.remove(Action2.FOLD);
      }
      } else {
      if (gamer.canCall(highestBet)) {
-     possibleActions.add(Action1.CALL);
+     possibleActions.add(Action2.CALL);
      } else {
      if (gamer.getStack() > 0) {
-     possibleActions.add(Action1.ALL_IN);
+     possibleActions.add(Action2.ALL_IN);
      }
      }
      }
@@ -663,7 +672,7 @@ public class Test {
         Test test = new Test();
         test.setGamers(gamers);
 
-        System.out.println("Test.noBet() == " + test.noBet(gamers));
+        System.out.println("Test1.noBet() == " + test.noBet(gamers));
 
         test.bettingRound();
 
