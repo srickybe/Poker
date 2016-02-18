@@ -272,7 +272,7 @@ class Gamer {
     }
 
     int raiseInferiorToLastRaise(int highestBet, int lastRaise) {
-        if (getStack() >= lastRaise) {
+        if (getStack() >= 2 * lastRaise) {
             throw new UnsupportedOperationException();
         }
 
@@ -561,7 +561,7 @@ public class Test {
 
         if (betCalledByEveryOne(gamers)) {
             possibleActions.add(Action2.CHECK);
-            
+
             if (gamer.canFullyRaise(highestBet, lastRaise)) {
                 possibleActions.add(Action2.RAISE);
                 possibleActions.add(Action2.RAISE_ALL_IN);

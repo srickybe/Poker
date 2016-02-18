@@ -14,7 +14,6 @@ public enum Action {
     CALL,
     CHECK,
     FOLD,
-    NONE,
     RAISE;
 
     boolean isAllIn() {
@@ -31,10 +30,6 @@ public enum Action {
 
     boolean isFold() {
         return this.equals(FOLD);
-    }
-
-    boolean isNone(){
-        return this.equals(NONE);
     }
     
     boolean isRaise() {

@@ -19,9 +19,7 @@ public class Player {
         Action[] actions = Action.values();
 
         for (int i = 0; i < actions.length; ++i) {
-            if (!actions[i].isNone()) {
-                res += i + ", TO " + actions[i].toString() + "\n";
-            }
+            res += i + ", TO " + actions[i].toString() + "\n";
         }
 
         return res;
@@ -31,7 +29,7 @@ public class Player {
     private final Hand hole;
     private final Hand hand;
     private Action latestAction;
-    private Integer chips;
+    private Integer stack;
     private int currentBet;
     private boolean hasFolded;
 
@@ -39,14 +37,14 @@ public class Player {
      * Construct a player with the name "name"
      *
      * @param name name of the player
-     * @param chips number of player's chips
+     * @param chips number of player's stack
      */
     public Player(String name, int chips) {
         this.name = name;
         hole = new Hand();
         hand = new Hand();
         latestAction = null;
-        this.chips = chips;
+        this.stack = chips;
         currentBet = 0;
         hasFolded = false;
     }
@@ -55,8 +53,8 @@ public class Player {
         return hole.getCard(index);
     }
 
-    public Integer getChips() {
-        return chips;
+    public Integer getStack() {
+        return stack;
     }
 
     public Integer getCurrentBet() {
@@ -76,7 +74,7 @@ public class Player {
     }
 
     public void resetLatestAction() {
-        latestAction = Action.NONE;
+        latestAction = null;
     }
 
     public void setLatestAction(Action latestAction) {
@@ -89,7 +87,7 @@ public class Player {
     }
 
     public void addChips(int chips) {
-        this.chips += chips;
+        this.stack += chips;
     }
 
     public int getActionChoice() {
@@ -116,7 +114,7 @@ public class Player {
     int bet(Action action, int bigBlind, int highestBet) {
         switch (action) {
             case ALL_IN:
-                return getChips();
+                return getStack();
 
             case CALL:
                 return highestBet;
@@ -233,13 +231,13 @@ public class Player {
     }
 
     public void removeBetChips() {
-        chips -= currentBet;
+        stack -= currentBet;
     }
 
     @Override
     public String toString() {
         return "Player{" + "name=" + name + ", hole=" + hole
-                + ", cards=" + hand + ", chips=" + chips
+                + ", cards=" + hand + ", chips=" + stack
                 + ", currentBet=" + currentBet + ", hasFolded=" + hasFolded + '}';
     }
 
@@ -282,7 +280,7 @@ public class Player {
 
     private int raise(int bigBlind, int highestBet) {
         Integer raise;
-        int maxRaise = getChips() - highestBet;
+        int maxRaise = getStack() - highestBet;
 
         while (true) {
             output(getName() + ": " + actionPromptMessage());
@@ -316,6 +314,6 @@ public class Player {
     }
 
     boolean canRaise(int bigBlind, int highestBet) {
-        return ((this.getChips() - highestBet) / bigBlind) >= 1;
+        return ((this.getStack() - highestBet) / bigBlind) >= 1;
     }
 }
